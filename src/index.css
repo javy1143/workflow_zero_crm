@@ -1,0 +1,398 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono&display=swap');
+
+:root {
+  /* Colors */
+  --color-midnight-abyss: #05060f;
+  --color-ghost-white: #ffffff;
+  --color-storm-gray: #2f343f;
+  --color-comet: #d8ecf8;
+  --color-arctic-mist: #d1e4fa;
+  --color-celestial-light: #b6d9fc;
+  --color-azure-glow: #c7d3ea;
+  --color-slate-dew: #3f4959;
+  --color-whisper-blue: #9da7ba;
+  --color-neon-violet: #663af3;
+  --color-interstellar-gray: #81899b;
+
+  --gradient-twilight-gradient-overlay: linear-gradient(0deg, rgb(216, 236, 248) 0%, rgb(152, 192, 239) 100%);
+  --gradient-system-highlight-border: linear-gradient(90deg, rgba(0, 0, 0, 0), rgba(186, 215, 247, 0.12), rgba(0, 0, 0, 0));
+
+  /* Typography — Font Families */
+  --font-untitled-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-aeonikpro: 'Space Grotesk', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-dotdigital: 'IBM Plex Mono', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* Typography — Scale */
+  --text-caption: 12px;
+  --leading-caption: 1.5;
+  --tracking-caption: -0.01px;
+  
+  --text-body: 14px;
+  --leading-body: 1.5;
+  --tracking-body: -0.01px;
+  
+  --text-body-lg: 16px;
+  --leading-body-lg: 1.5;
+  --tracking-body-lg: -0.01px;
+  
+  --text-subheading: 18px;
+  --leading-subheading: 1.43;
+  --tracking-subheading: -0.01px;
+  
+  --text-heading: 24px;
+  --leading-heading: 1.33;
+  --tracking-heading: -0.01px;
+  
+  --text-heading-lg: 28px;
+  --leading-heading-lg: 1.2;
+  
+  --text-display: 44px;
+  --leading-display: 1.16;
+  
+  --text-display-xl: 48px;
+  --leading-display-xl: 1.14;
+
+  /* Typography — Weights */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Spacing */
+  --spacing-4: 4px;
+  --spacing-8: 8px;
+  --spacing-12: 12px;
+  --spacing-16: 16px;
+  --spacing-20: 20px;
+  --spacing-24: 24px;
+  --spacing-32: 32px;
+  --spacing-36: 36px;
+  --spacing-40: 40px;
+  --spacing-48: 48px;
+  --spacing-56: 56px;
+  --spacing-100: 100px;
+  --spacing-120: 120px;
+  --spacing-200: 200px;
+
+  /* Layout */
+  --section-gap: 48px;
+  --card-padding: 24px;
+  --element-gap: 8px;
+
+  /* Border Radius */
+  --radius-sm: 2px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-2xl: 16px;
+  --radius-3xl: 24px;
+  --radius-full: 999px;
+
+  /* Shadows & Glassmorphism */
+  --shadow-sm: rgba(186, 207, 247, 0.32) 0px 0px 6px 0px;
+  --shadow-md: rgba(238, 186, 247, 0.24) 0px 0px 12px 0px;
+  --shadow-subtle: rgba(186, 215, 247, 0.12) 0px 0px 0px 1px inset;
+  
+  /* Glassy Feature Card */
+  --shadow-glassy: rgba(199, 211, 234, 0.12) 0px 1px 1px 0px inset, 
+                    rgba(199, 211, 234, 0.05) 0px 24px 48px 0px inset, 
+                    rgba(6, 6, 14, 0.7) 0px 24px 32px 0px;
+  
+  /* Login Form Card */
+  --shadow-login: rgba(216, 236, 248, 0.2) 0px 1px 1px 0px inset, 
+                  rgba(168, 216, 245, 0.06) 0px 24px 48px 0px inset, 
+                  rgba(0, 0, 0, 0.3) 0px 16px 32px 0px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--color-midnight-abyss);
+  color: var(--color-comet);
+  font-family: var(--font-untitled-sans);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-aeonikpro);
+  color: var(--color-ghost-white);
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+a {
+  color: var(--color-comet);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--color-ghost-white);
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-midnight-abyss);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-storm-gray);
+  border-radius: var(--radius-md);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-slate-dew);
+}
+
+/* Glassy Feature Card style */
+.glassy-card {
+  background: rgba(186, 214, 247, 0.03);
+  border: 1px solid rgba(186, 215, 247, 0.08);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-glassy);
+  padding: var(--card-padding);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  backdrop-filter: blur(10px);
+}
+
+.glassy-card:hover {
+  border-color: rgba(186, 215, 247, 0.16);
+  box-shadow: rgba(199, 211, 234, 0.16) 0px 1px 1px 0px inset, 
+              rgba(199, 211, 234, 0.08) 0px 24px 48px 0px inset, 
+              rgba(6, 6, 14, 0.85) 0px 24px 32px 0px;
+}
+
+/* Login Form Card style */
+.login-card {
+  background: rgba(5, 6, 15, 0.97);
+  border: 1px solid rgba(186, 215, 247, 0.12);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-login);
+  padding: 32px;
+  backdrop-filter: blur(20px);
+}
+
+/* Buttons */
+.btn-primary-pill {
+  background: rgba(186, 214, 247, 0.06);
+  color: var(--color-ghost-white);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-full);
+  padding: 8px 20px;
+  font-family: var(--font-untitled-sans);
+  font-size: var(--text-body);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-8);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: var(--shadow-subtle-3);
+}
+
+.btn-primary-pill:hover {
+  background: rgba(186, 214, 247, 0.12);
+  border-color: var(--color-ghost-white);
+  transform: translateY(-1px);
+}
+
+.btn-secondary-outline {
+  background: transparent;
+  color: var(--color-arctic-mist);
+  border: 1px solid rgba(186, 215, 247, 0.12);
+  border-radius: var(--radius-full);
+  padding: 8px 20px;
+  font-family: var(--font-untitled-sans);
+  font-size: var(--text-body);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-8);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-secondary-outline:hover {
+  border-color: rgba(186, 215, 247, 0.24);
+  color: var(--color-ghost-white);
+  background: rgba(186, 215, 247, 0.02);
+}
+
+.btn-solid-primary {
+  background: var(--color-neon-violet);
+  color: var(--color-ghost-white);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 12px 24px;
+  font-family: var(--font-untitled-sans);
+  font-size: var(--text-body-lg);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-8);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 12px rgba(102, 58, 243, 0.3);
+}
+
+.btn-solid-primary:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 6px 16px rgba(102, 58, 243, 0.45);
+  transform: translateY(-1px);
+}
+
+.btn-icon {
+  background: transparent;
+  border: 1px solid rgba(186, 215, 247, 0.12);
+  border-radius: var(--radius-full);
+  color: var(--color-ghost-white);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-icon:hover {
+  background: rgba(186, 215, 247, 0.05);
+  border-color: rgba(186, 215, 247, 0.3);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Input Fields */
+.input-minimal {
+  background: rgba(199, 211, 234, 0.06);
+  color: var(--color-ghost-white);
+  border: 1px solid rgba(186, 215, 247, 0.12);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  font-family: var(--font-untitled-sans);
+  font-size: var(--text-body);
+  outline: none;
+  width: 100%;
+  transition: all 0.2s ease;
+}
+
+.input-minimal:focus {
+  border-color: var(--color-celestial-light);
+  background: rgba(199, 211, 234, 0.1);
+  box-shadow: var(--shadow-sm);
+}
+
+.input-minimal::placeholder {
+  color: var(--color-whisper-blue);
+  opacity: 0.8;
+}
+
+.input-minimal:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Status Badges */
+.status-badge {
+  color: var(--color-arctic-mist);
+  background: var(--color-midnight-abyss);
+  border: 1px solid rgba(186, 215, 247, 0.08);
+  border-radius: var(--radius-md);
+  padding: 4px 8px;
+  font-size: var(--text-caption);
+  font-family: var(--font-untitled-sans);
+  font-weight: var(--font-weight-medium);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-4);
+}
+
+.status-badge.active, .status-badge.completed {
+  border-color: rgba(52, 211, 153, 0.2);
+  color: #34d399;
+}
+
+.status-badge.lead, .status-badge.in-progress {
+  border-color: rgba(96, 165, 250, 0.2);
+  color: #60a5fa;
+}
+
+.status-badge.inactive, .status-badge.on-hold {
+  border-color: rgba(248, 113, 113, 0.2);
+  color: #f87171;
+}
+
+.status-badge.planning, .status-badge.testing {
+  border-color: rgba(251, 191, 36, 0.2);
+  color: #fbce4a;
+}
+
+/* Table Utilities */
+.table-container {
+  overflow-x: auto;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(186, 215, 247, 0.08);
+  background: rgba(186, 214, 247, 0.01);
+}
+
+.crm-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: var(--text-body);
+}
+
+.crm-table th {
+  background: rgba(5, 6, 15, 0.6);
+  color: var(--color-arctic-mist);
+  font-weight: var(--font-weight-medium);
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(186, 215, 247, 0.08);
+  font-family: var(--font-aeonikpro);
+  font-size: var(--text-body-lg);
+}
+
+.crm-table td {
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(186, 215, 247, 0.04);
+  color: var(--color-comet);
+}
+
+.crm-table tr:hover td {
+  background: rgba(186, 214, 247, 0.02);
+  color: var(--color-ghost-white);
+}
+
+/* Print utility for reports */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  .glassy-card {
+    background: transparent !important;
+    border: 1px solid #ccc !important;
+    box-shadow: none !important;
+    color: black !important;
+  }
+}
