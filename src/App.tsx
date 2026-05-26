@@ -310,11 +310,6 @@ export default function App() {
             <span style={{ color: 'var(--color-arctic-mist)' }}>
               {user.displayName || user.email}
             </span>
-            {authService.isDemo() && (
-              <span className="status-badge" style={{ fontSize: '9px', padding: '2px 6px', color: '#fbce4a', borderColor: 'rgba(251, 191, 36, 0.2)' }}>
-                DEMO
-              </span>
-            )}
           </div>
           <button 
             onClick={handleSignOut}

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { authService } from '../firebase';
-import { Shield, Sparkles, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 
 interface SignInProps {
   onAuthSuccess: () => void;
@@ -32,20 +32,7 @@ export const SignIn: React.FC<SignInProps> = ({ onAuthSuccess }) => {
     }
   };
 
-  const handleDemoMode = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      await authService.signIn('demo@workflowzero.local', 'demo123');
-      onAuthSuccess();
-    } catch (err: any) {
-      setError(err.message || 'Failed to initialize demo mode.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const isDemo = authService.isDemo();
 
   return (
     <div style={{
@@ -90,7 +77,7 @@ export const SignIn: React.FC<SignInProps> = ({ onAuthSuccess }) => {
             color: 'var(--color-whisper-blue)',
             fontFamily: 'var(--font-untitled-sans)'
           }}>
-            {isDemo ? "Run instant preview or connect your custom backend" : "Midnight Control Center login"}
+            Midnight Control Center login
           </p>
         </div>
 
@@ -166,27 +153,8 @@ export const SignIn: React.FC<SignInProps> = ({ onAuthSuccess }) => {
             </button>
           </form>
 
-          {/* Divider */}
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            margin: '8px 0',
-            height: '1px',
-            background: 'var(--gradient-system-highlight-border)' 
-          }} />
-
-          {/* Action buttons to toggle Mode / Demo mode */}
+          {/* Action buttons to toggle Mode */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <button 
-              onClick={handleDemoMode}
-              className="btn-primary-pill"
-              disabled={loading}
-              style={{ justifyContent: 'center', padding: '10px' }}
-            >
-              <Sparkles size={16} />
-              Continue to Demo Mode
-            </button>
-
             <button
               onClick={() => setIsSignUp(!isSignUp)}
               style={{
@@ -204,22 +172,6 @@ export const SignIn: React.FC<SignInProps> = ({ onAuthSuccess }) => {
             </button>
           </div>
         </div>
-
-        {/* Footnote details */}
-        {isDemo && (
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            color: 'var(--color-interstellar-gray)',
-            fontSize: '11px',
-            textAlign: 'center'
-          }}>
-            <Shield size={12} />
-            <span>Running locally. Real Firebase endpoints can be linked in <code>.env</code> file.</span>
-          </div>
-        )}
       </div>
     </div>
   );
