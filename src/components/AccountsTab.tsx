@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { Account, Contact, Project, Asset } from '../types';
-import { Plus, Search, Filter, Globe, Phone, Mail, MapPin, Edit3, X, FileText, Upload, Trash2, Paperclip, Briefcase, FolderGit, HardDrive, Users } from 'lucide-react';
+import { Plus, Search, Filter, Globe, Phone, Mail, MapPin, Edit3, X, FileText, Upload, Trash2, Paperclip, Briefcase, FolderGit, HardDrive, Users, AlertCircle } from 'lucide-react';
 
 interface AccountsTabProps {
   accounts: Account[];
@@ -27,6 +27,8 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [editMode, setEditMode] = useState(false);
+  const [addError, setAddError] = useState<string | null>(null);
+  const [editError, setEditError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Add Account form states
@@ -108,12 +110,14 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({
     setEditState(account.state);
     setEditPostalCode(account.postalCode);
     setEditMode(false);
+    setEditError(null);
   };
 
   const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name) return;
     setSubmitting(true);
+    setAddError(null);
     try {
       await onAddAccount({
         name,
@@ -140,8 +144,9 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({
       setState('');
       setPostalCode('');
       setShowAddModal(false);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      setAddError(err.message || 'Failed to create account.');
     } finally {
       setSubmitting(false);
     }
@@ -151,6 +156,7 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({
     e.preventDefault();
     if (!selectedAccount || !editName) return;
     setUpdating(true);
+    setEditError(null);
     try {
       const updates = {
         name: editName,
@@ -169,8 +175,9 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({
       // Update selected account state locally to reflect edits
       setSelectedAccount(prev => prev ? { ...prev, ...updates } : null);
       setEditMode(false);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      setEditError(err.message || 'Failed to update account.');
     } finally {
       setUpdating(false);
     }
@@ -240,7 +247,7 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({
             List of all client accounts. Click on any client to view details, make updates, and upload documentation.
           </p>
         </div>
-        <button className="btn-primary-pill" onClick={() => setShowAddModal(true)}>
+        <button className="btn-primary-pill" onClick={() => { setAddError(null); setShowAddModal(true); }}>
           <Plus size={16} />
           <span>Add Account</span>
         </button>
@@ -398,6 +405,23 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({
           }}>
             <h3 style={{ fontSize: 'var(--text-heading)', fontFamily: 'var(--font-aeonikpro)' }}>Add New Client Account</h3>
             
+            {addError && (
+              <div style={{
+                display: 'flex',
+                gap: '10px',
+                background: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid rgba(239, 68, 68, 0.2)',
+                borderRadius: 'var(--radius-md)',
+                padding: '12px',
+                color: '#f87171',
+                fontSize: 'var(--text-body)',
+                alignItems: 'flex-start'
+              }}>
+                <AlertCircle size={18} style={{ flexShrink: 0, marginTop: '2px' }} />
+                <span>{addError}</span>
+              </div>
+            )}
+
             <form onSubmit={handleAddSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -600,6 +624,22 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({
             {editMode ? (
               /* EDITOR FORM */
               <form onSubmit={handleEditSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {editError && (
+                  <div style={{
+                    display: 'flex',
+                    gap: '10px',
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    border: '1px solid rgba(239, 68, 68, 0.2)',
+                    borderRadius: 'var(--radius-md)',
+                    padding: '12px',
+                    color: '#f87171',
+                    fontSize: 'var(--text-body)',
+                    alignItems: 'flex-start'
+                  }}>
+                    <AlertCircle size={18} style={{ flexShrink: 0, marginTop: '2px' }} />
+                    <span>{editError}</span>
+                  </div>
+                )}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Account Name*</label>
