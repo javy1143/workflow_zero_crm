@@ -269,7 +269,7 @@ export const dbService = {
       try {
         const querySnapshot = await getDocs(collection(firestore, 'accounts'));
         const accounts: Account[] = [];
-        querySnapshot.forEach((doc) => {
+        querySnapshot.forEach((doc: any) => {
           accounts.push({ id: doc.id, ...doc.data() } as Account);
         });
         return accounts;
@@ -340,7 +340,7 @@ export const dbService = {
       try {
         const querySnapshot = await getDocs(collection(firestore, 'contacts'));
         const contacts: Contact[] = [];
-        querySnapshot.forEach((doc) => {
+        querySnapshot.forEach((doc: any) => {
           contacts.push({ id: doc.id, ...doc.data() } as Contact);
         });
         return contacts;
@@ -407,7 +407,7 @@ export const dbService = {
       try {
         const querySnapshot = await getDocs(collection(firestore, 'projects'));
         const projects: Project[] = [];
-        querySnapshot.forEach((doc) => {
+        querySnapshot.forEach((doc: any) => {
           projects.push({ id: doc.id, ...doc.data() } as Project);
         });
         return projects;
@@ -477,7 +477,7 @@ export const dbService = {
       try {
         const querySnapshot = await getDocs(collection(firestore, 'assets'));
         const assets: Asset[] = [];
-        querySnapshot.forEach((doc) => {
+        querySnapshot.forEach((doc: any) => {
           assets.push({ id: doc.id, ...doc.data() } as Asset);
         });
         return assets;
@@ -544,7 +544,7 @@ export const dbService = {
       try {
         const querySnapshot = await getDocs(collection(firestore, 'vendors'));
         const vendors: Vendor[] = [];
-        querySnapshot.forEach((doc) => {
+        querySnapshot.forEach((doc: any) => {
           vendors.push({ id: doc.id, ...doc.data() } as Vendor);
         });
         return vendors;
