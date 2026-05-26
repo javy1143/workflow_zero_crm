@@ -396,3 +396,30 @@ a:hover {
     color: black !important;
   }
 }
+
+/* Dropdowns Option Fix for Dark Mode */
+select option {
+  background-color: var(--color-midnight-abyss) !important;
+  color: var(--color-comet) !important;
+}
+
+select option:hover {
+  background-color: var(--color-storm-gray) !important;
+  color: var(--color-ghost-white) !important;
+}
+
+/* Clickable elements indicators */
+.clickable-row {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.clickable-card {
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.clickable-card:hover {
+  transform: translateY(-2px);
+}
+

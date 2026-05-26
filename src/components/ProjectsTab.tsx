@@ -1,28 +1,33 @@
 import React, { useState, useMemo } from 'react';
 import { Project, Account, Contact } from '../types';
-import { Plus, Search, Filter, Calendar, User, Building, Compass } from 'lucide-react';
+import { Plus, Search, Filter, Calendar, User, Building, Compass, Edit3, X } from 'lucide-react';
 
 interface ProjectsTabProps {
   projects: Project[];
   accounts: Account[];
   contacts: Contact[];
   onAddProject: (project: Omit<Project, 'id' | 'createdAt'>) => Promise<void>;
+  onUpdateProject: (id: string, updates: Partial<Omit<Project, 'id' | 'createdAt'>>) => Promise<void>;
 }
 
 export const ProjectsTab: React.FC<ProjectsTabProps> = ({
   projects,
   accounts,
   contacts,
-  onAddProject
+  onAddProject,
+  onUpdateProject
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [accountFilter, setAccountFilter] = useState<string>('ALL');
   const [minCompletion, setMinCompletion] = useState<number>(0);
   const [maxCompletion, setMaxCompletion] = useState<number>(100);
+  
+  // Modals state
   const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
-  // Form states
+  // Add Project form states
   const [name, setName] = useState('');
   const [owner, setOwner] = useState('');
   const [status, setStatus] = useState<'Planning' | 'In Progress' | 'On Hold' | 'Completed'>('Planning');
@@ -34,15 +39,31 @@ export const ProjectsTab: React.FC<ProjectsTabProps> = ({
   const [summary, setSummary] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  // Edit Project form states
+  const [editName, setEditName] = useState('');
+  const [editOwner, setEditOwner] = useState('');
+  const [editStatus, setEditStatus] = useState<'Planning' | 'In Progress' | 'On Hold' | 'Completed'>('Planning');
+  const [editAccountId, setEditAccountId] = useState('');
+  const [editContactId, setEditContactId] = useState('');
+  const [editStartDate, setEditStartDate] = useState('');
+  const [editTargetDate, setEditTargetDate] = useState('');
+  const [editPercentageComplete, setEditPercentageComplete] = useState<number>(0);
+  const [editSummary, setEditSummary] = useState('');
+  const [updating, setUpdating] = useState(false);
+
   // Filter contacts in new project modal depending on selected account
   const modalFilteredContacts = useMemo(() => {
     if (!accountId) return [];
     return contacts.filter(c => c.accountId === accountId);
   }, [accountId, contacts]);
 
+  // Filter contacts in edit project modal depending on selected account
+  const editModalFilteredContacts = useMemo(() => {
+    if (!editAccountId) return [];
+    return contacts.filter(c => c.accountId === editAccountId);
+  }, [editAccountId, contacts]);
+
   // Default sorting: default list should be sorted by completion percentage
-  // We will sort descending so that the highest percentage complete or near-completed are grouped.
-  // We can let the user toggle sorting but default is sorted by percentage.
   const filteredAndSortedProjects = useMemo(() => {
     return projects
       .filter(project => {
@@ -64,7 +85,20 @@ export const ProjectsTab: React.FC<ProjectsTabProps> = ({
       .sort((a, b) => b.percentageComplete - a.percentageComplete);
   }, [projects, accounts, searchTerm, statusFilter, accountFilter, minCompletion, maxCompletion]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSelectProject = (project: Project) => {
+    setSelectedProject(project);
+    setEditName(project.name);
+    setEditOwner(project.owner);
+    setEditStatus(project.status);
+    setEditAccountId(project.accountId);
+    setEditContactId(project.contactId);
+    setEditStartDate(project.startDate);
+    setEditTargetDate(project.targetDate);
+    setEditPercentageComplete(project.percentageComplete);
+    setEditSummary(project.summary);
+  };
+
+  const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !owner || !accountId || !contactId) return;
     setSubmitting(true);
@@ -98,6 +132,30 @@ export const ProjectsTab: React.FC<ProjectsTabProps> = ({
     }
   };
 
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedProject || !editName || !editOwner || !editAccountId || !editContactId) return;
+    setUpdating(true);
+    try {
+      await onUpdateProject(selectedProject.id, {
+        name: editName,
+        owner: editOwner,
+        status: editStatus,
+        accountId: editAccountId,
+        contactId: editContactId,
+        startDate: editStartDate,
+        targetDate: editTargetDate,
+        percentageComplete: editPercentageComplete,
+        summary: editSummary
+      });
+      setSelectedProject(null);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       {/* Title & Action Bar */}
@@ -107,7 +165,7 @@ export const ProjectsTab: React.FC<ProjectsTabProps> = ({
             Project Portfolio
           </h2>
           <p style={{ color: 'var(--color-whisper-blue)', fontSize: 'var(--text-body)', marginTop: '4px' }}>
-            List of all ongoing and finished projects, default sorted by completion rate.
+            Click on any project card below to modify status, deliverables summary, or completion percentage.
           </p>
         </div>
         <button className="btn-primary-pill" onClick={() => setShowAddModal(true)}>
@@ -223,12 +281,23 @@ export const ProjectsTab: React.FC<ProjectsTabProps> = ({
             const linkedAccount = accounts.find(a => a.id === project.accountId);
             const linkedContact = contacts.find(c => c.id === project.contactId);
             return (
-              <div key={project.id} className="glassy-card" style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '16px'
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
+              <div 
+                key={project.id} 
+                className="glassy-card clickable-card" 
+                onClick={() => handleSelectProject(project)}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '16px',
+                  position: 'relative'
+                }}
+              >
+                {/* Visual Edit indicator */}
+                <div style={{ position: 'absolute', top: '16px', right: '16px', color: 'var(--color-whisper-blue)', opacity: 0.5 }}>
+                  <Edit3 size={14} />
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px', paddingRight: '24px' }}>
                   <div>
                     <h3 style={{ fontSize: 'var(--text-subheading)', color: 'var(--color-ghost-white)' }}>
                       {project.name}
@@ -289,12 +358,12 @@ export const ProjectsTab: React.FC<ProjectsTabProps> = ({
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexGrow: 1, maxWidth: '400px' }}>
                     <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-whisper-blue)' }}>Progress:</span>
-                    <div style={{ flexGrow: 1, height: '8px', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ flexGrow: 1, height: '6px', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '3px', overflow: 'hidden' }}>
                       <div style={{
                         width: `${project.percentageComplete}%`,
                         height: '100%',
                         background: project.status === 'Completed' ? '#34d399' : 'var(--color-neon-violet)',
-                        borderRadius: '4px'
+                        borderRadius: '3px'
                       }} />
                     </div>
                     <span style={{ fontFamily: 'var(--font-dotdigital)', color: 'var(--color-ghost-white)', minWidth: '32px' }}>
@@ -349,7 +418,7 @@ export const ProjectsTab: React.FC<ProjectsTabProps> = ({
           }}>
             <h3 style={{ fontSize: 'var(--text-heading)', fontFamily: 'var(--font-aeonikpro)' }}>Create New Project</h3>
             
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <form onSubmit={handleAddSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Project Name*</label>
                 <input
@@ -493,6 +562,185 @@ export const ProjectsTab: React.FC<ProjectsTabProps> = ({
                   style={{ borderRadius: 'var(--radius-md)', padding: '8px 20px', fontSize: 'var(--text-body)' }}
                 >
                   {submitting ? 'Creating...' : 'Create Project'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Project Modal */}
+      {selectedProject && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: 'rgba(5, 6, 15, 0.8)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 100,
+          backdropFilter: 'blur(4px)'
+        }}>
+          <div className="login-card" style={{
+            width: '100%',
+            maxWidth: '560px',
+            maxHeight: '95vh',
+            overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '20px'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ fontSize: 'var(--text-heading)', fontFamily: 'var(--font-aeonikpro)' }}>Edit Project Details</h3>
+              <button onClick={() => setSelectedProject(null)} className="btn-icon" style={{ width: '30px', height: '30px' }}>
+                <X size={14} />
+              </button>
+            </div>
+            
+            <form onSubmit={handleEditSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Project Name*</label>
+                <input
+                  type="text"
+                  className="input-minimal"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Project Owner*</label>
+                  <input
+                    type="text"
+                    className="input-minimal"
+                    value={editOwner}
+                    onChange={(e) => setEditOwner(e.target.value)}
+                    required
+                  />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Status</label>
+                  <select
+                    className="input-minimal"
+                    value={editStatus}
+                    onChange={(e) => setEditStatus(e.target.value as any)}
+                  >
+                    <option value="Planning">Planning</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="On Hold">On Hold</option>
+                    <option value="Completed">Completed</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Client Account*</label>
+                  <select
+                    className="input-minimal"
+                    value={editAccountId}
+                    onChange={(e) => {
+                      setEditAccountId(e.target.value);
+                      setEditContactId(''); // Reset contact selection
+                    }}
+                    required
+                  >
+                    <option value="">-- Select Client --</option>
+                    {accounts.map(acc => (
+                      <option key={acc.id} value={acc.id}>{acc.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Primary Contact*</label>
+                  <select
+                    className="input-minimal"
+                    value={editContactId}
+                    onChange={(e) => setEditContactId(e.target.value)}
+                    required
+                    disabled={!editAccountId}
+                  >
+                    <option value="">
+                      {!editAccountId ? 'Select a client first' : '-- Select Contact --'}
+                    </option>
+                    {editModalFilteredContacts.map(con => (
+                      <option key={con.id} value={con.id}>
+                        {con.firstName} {con.lastName} ({con.jobTitle})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Start Date</label>
+                  <input
+                    type="date"
+                    className="input-minimal"
+                    value={editStartDate}
+                    onChange={(e) => setEditStartDate(e.target.value)}
+                  />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Target Date</label>
+                  <input
+                    type="date"
+                    className="input-minimal"
+                    value={editTargetDate}
+                    onChange={(e) => setEditTargetDate(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Percentage Complete</label>
+                  <span style={{ fontFamily: 'var(--font-dotdigital)', color: 'var(--color-ghost-white)' }}>{editPercentageComplete}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  className="input-minimal"
+                  value={editPercentageComplete}
+                  onChange={(e) => setEditPercentageComplete(Number(e.target.value))}
+                  style={{ accentColor: 'var(--color-neon-violet)', padding: '4px 0' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Summary / Description</label>
+                <textarea
+                  className="input-minimal"
+                  rows={3}
+                  value={editSummary}
+                  onChange={(e) => setEditSummary(e.target.value)}
+                  style={{ resize: 'vertical' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '8px' }}>
+                <button 
+                  type="button" 
+                  className="btn-secondary-outline" 
+                  onClick={() => setSelectedProject(null)}
+                  disabled={updating}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="btn-solid-primary" 
+                  disabled={updating}
+                  style={{ borderRadius: 'var(--radius-md)', padding: '8px 20px', fontSize: 'var(--text-body)' }}
+                >
+                  {updating ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
             </form>

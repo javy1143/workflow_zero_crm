@@ -1,18 +1,26 @@
 import React, { useState, useMemo } from 'react';
 import { Vendor } from '../types';
-import { Plus, Search, Filter, Globe, Mail, Phone, BookOpen } from 'lucide-react';
+import { Plus, Search, Filter, Globe, Mail, Phone, BookOpen, Edit3, X } from 'lucide-react';
 
 interface VendorsTabProps {
   vendors: Vendor[];
   onAddVendor: (vendor: Omit<Vendor, 'id' | 'createdAt'>) => Promise<void>;
+  onUpdateVendor: (id: string, updates: Partial<Omit<Vendor, 'id' | 'createdAt'>>) => Promise<void>;
 }
 
-export const VendorsTab: React.FC<VendorsTabProps> = ({ vendors, onAddVendor }) => {
+export const VendorsTab: React.FC<VendorsTabProps> = ({ 
+  vendors, 
+  onAddVendor,
+  onUpdateVendor
+}) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
+  
+  // Modals state
   const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
 
-  // Form states
+  // Add Vendor form states
   const [name, setName] = useState('');
   const [category, setCategory] = useState('');
   const [website, setWebsite] = useState('');
@@ -20,6 +28,15 @@ export const VendorsTab: React.FC<VendorsTabProps> = ({ vendors, onAddVendor }) 
   const [supportPhone, setSupportPhone] = useState('');
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  // Edit Vendor form states
+  const [editName, setEditName] = useState('');
+  const [editCategory, setEditCategory] = useState('');
+  const [editWebsite, setEditWebsite] = useState('');
+  const [editSupportEmail, setEditSupportEmail] = useState('');
+  const [editSupportPhone, setEditSupportPhone] = useState('');
+  const [editNotes, setEditNotes] = useState('');
+  const [updating, setUpdating] = useState(false);
 
   // Get unique categories for dropdown
   const categories = useMemo(() => {
@@ -41,7 +58,17 @@ export const VendorsTab: React.FC<VendorsTabProps> = ({ vendors, onAddVendor }) 
     });
   }, [vendors, searchTerm, categoryFilter]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSelectVendor = (vendor: Vendor) => {
+    setSelectedVendor(vendor);
+    setEditName(vendor.name);
+    setEditCategory(vendor.category);
+    setEditWebsite(vendor.website);
+    setEditSupportEmail(vendor.supportEmail);
+    setEditSupportPhone(vendor.supportPhone);
+    setEditNotes(vendor.notes);
+  };
+
+  const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name) return;
     setSubmitting(true);
@@ -69,6 +96,27 @@ export const VendorsTab: React.FC<VendorsTabProps> = ({ vendors, onAddVendor }) 
     }
   };
 
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedVendor || !editName) return;
+    setUpdating(true);
+    try {
+      await onUpdateVendor(selectedVendor.id, {
+        name: editName,
+        category: editCategory,
+        website: editWebsite,
+        supportEmail: editSupportEmail,
+        supportPhone: editSupportPhone,
+        notes: editNotes
+      });
+      setSelectedVendor(null);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       {/* Title & Action Bar */}
@@ -78,7 +126,7 @@ export const VendorsTab: React.FC<VendorsTabProps> = ({ vendors, onAddVendor }) 
             Vendor & Partner Directory
           </h2>
           <p style={{ color: 'var(--color-whisper-blue)', fontSize: 'var(--text-body)', marginTop: '4px' }}>
-            Reference directory of active partners and third-party utility vendors.
+            Click on any vendor card below to make updates to support channels, categorization tags, or general partner notes.
           </p>
         </div>
         <button className="btn-primary-pill" onClick={() => setShowAddModal(true)}>
@@ -139,13 +187,24 @@ export const VendorsTab: React.FC<VendorsTabProps> = ({ vendors, onAddVendor }) 
       }}>
         {filteredVendors.length > 0 ? (
           filteredVendors.map(vendor => (
-            <div key={vendor.id} className="glassy-card" style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '16px'
-            }}>
+            <div 
+              key={vendor.id} 
+              className="glassy-card clickable-card" 
+              onClick={() => handleSelectVendor(vendor)}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '16px',
+                position: 'relative'
+              }}
+            >
+              {/* Visual edit indicator */}
+              <div style={{ position: 'absolute', top: '16px', right: '16px', color: 'var(--color-whisper-blue)', opacity: 0.5 }}>
+                <Edit3 size={14} />
+              </div>
+
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingRight: '24px' }}>
                   <h4 style={{ fontSize: 'var(--text-body-lg)', color: 'var(--color-ghost-white)', fontWeight: 500 }}>
                     {vendor.name}
                   </h4>
@@ -156,15 +215,10 @@ export const VendorsTab: React.FC<VendorsTabProps> = ({ vendors, onAddVendor }) 
                   )}
                 </div>
                 {vendor.website && (
-                  <a 
-                    href={vendor.website} 
-                    target="_blank" 
-                    rel="noreferrer"
-                    style={{ fontSize: 'var(--text-caption)', color: 'var(--color-celestial-light)', marginTop: '2px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-                  >
+                  <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-celestial-light)', marginTop: '2px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                     <Globe size={11} />
                     {vendor.website.replace(/^https?:\/\/(www\.)?/, '')}
-                  </a>
+                  </span>
                 )}
               </div>
 
@@ -197,14 +251,14 @@ export const VendorsTab: React.FC<VendorsTabProps> = ({ vendors, onAddVendor }) 
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', paddingLeft: '16px' }}>
                   {vendor.supportEmail && (
-                    <a href={`mailto:${vendor.supportEmail}`} style={{ color: 'var(--color-comet)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ color: 'var(--color-comet)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                       <Mail size={11} /> {vendor.supportEmail}
-                    </a>
+                    </span>
                   )}
                   {vendor.supportPhone && (
-                    <a href={`tel:${vendor.supportPhone}`} style={{ color: 'var(--color-comet)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ color: 'var(--color-comet)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                       <Phone size={11} /> {vendor.supportPhone}
-                    </a>
+                    </span>
                   )}
                   {!vendor.supportEmail && !vendor.supportPhone && (
                     <span>No direct support details on file.</span>
@@ -246,7 +300,7 @@ export const VendorsTab: React.FC<VendorsTabProps> = ({ vendors, onAddVendor }) 
           }}>
             <h3 style={{ fontSize: 'var(--text-heading)', fontFamily: 'var(--font-aeonikpro)' }}>Add Partner Vendor</h3>
             
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <form onSubmit={handleAddSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Vendor Name*</label>
                 <input
@@ -282,7 +336,7 @@ export const VendorsTab: React.FC<VendorsTabProps> = ({ vendors, onAddVendor }) 
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div style={{ gridTemplateColumns: '1fr 1fr', display: 'grid', gap: '16px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Support Email</label>
                   <input
@@ -333,6 +387,125 @@ export const VendorsTab: React.FC<VendorsTabProps> = ({ vendors, onAddVendor }) 
                   style={{ borderRadius: 'var(--radius-md)', padding: '8px 20px', fontSize: 'var(--text-body)' }}
                 >
                   {submitting ? 'Adding...' : 'Add Vendor'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Vendor Modal */}
+      {selectedVendor && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: 'rgba(5, 6, 15, 0.8)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 100,
+          backdropFilter: 'blur(4px)'
+        }}>
+          <div className="login-card" style={{
+            width: '100%',
+            maxWidth: '500px',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '20px'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ fontSize: 'var(--text-heading)', fontFamily: 'var(--font-aeonikpro)' }}>Edit Vendor Details</h3>
+              <button onClick={() => setSelectedVendor(null)} className="btn-icon" style={{ width: '30px', height: '30px' }}>
+                <X size={14} />
+              </button>
+            </div>
+            
+            <form onSubmit={handleEditSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Vendor Name*</label>
+                <input
+                  type="text"
+                  className="input-minimal"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Category / Tag</label>
+                  <input
+                    type="text"
+                    className="input-minimal"
+                    value={editCategory}
+                    onChange={(e) => setEditCategory(e.target.value)}
+                  />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Website</label>
+                  <input
+                    type="url"
+                    className="input-minimal"
+                    value={editWebsite}
+                    onChange={(e) => setEditWebsite(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Support Email</label>
+                  <input
+                    type="email"
+                    className="input-minimal"
+                    value={editSupportEmail}
+                    onChange={(e) => setEditSupportEmail(e.target.value)}
+                  />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Support Phone</label>
+                  <input
+                    type="text"
+                    className="input-minimal"
+                    value={editSupportPhone}
+                    onChange={(e) => setEditSupportPhone(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Partner Notes / SLA details</label>
+                <textarea
+                  className="input-minimal"
+                  rows={3}
+                  value={editNotes}
+                  onChange={(e) => setEditNotes(e.target.value)}
+                  style={{ resize: 'vertical' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '8px' }}>
+                <button 
+                  type="button" 
+                  className="btn-secondary-outline" 
+                  onClick={() => setSelectedVendor(null)}
+                  disabled={updating}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="btn-solid-primary" 
+                  disabled={updating}
+                  style={{ borderRadius: 'var(--radius-md)', padding: '8px 20px', fontSize: 'var(--text-body)' }}
+                >
+                  {updating ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
             </form>

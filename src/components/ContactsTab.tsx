@@ -1,19 +1,28 @@
 import React, { useState, useMemo } from 'react';
 import { Contact, Account } from '../types';
-import { Plus, Search, Filter, Mail, Phone, Briefcase, Building } from 'lucide-react';
+import { Plus, Search, Filter, Mail, Phone, Briefcase, Building, Edit3, X } from 'lucide-react';
 
 interface ContactsTabProps {
   contacts: Contact[];
   accounts: Account[];
   onAddContact: (contact: Omit<Contact, 'id' | 'createdAt'>) => Promise<void>;
+  onUpdateContact: (id: string, updates: Partial<Omit<Contact, 'id' | 'createdAt'>>) => Promise<void>;
 }
 
-export const ContactsTab: React.FC<ContactsTabProps> = ({ contacts, accounts, onAddContact }) => {
+export const ContactsTab: React.FC<ContactsTabProps> = ({ 
+  contacts, 
+  accounts, 
+  onAddContact,
+  onUpdateContact
+}) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [accountFilter, setAccountFilter] = useState<string>('ALL');
+  
+  // Modals state
   const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
 
-  // Form states
+  // Add Contact form states
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -21,6 +30,15 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({ contacts, accounts, on
   const [jobTitle, setJobTitle] = useState('');
   const [accountId, setAccountId] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  // Edit Contact form states
+  const [editFirstName, setEditFirstName] = useState('');
+  const [editLastName, setEditLastName] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [editPhone, setEditPhone] = useState('');
+  const [editJobTitle, setEditJobTitle] = useState('');
+  const [editAccountId, setEditAccountId] = useState('');
+  const [updating, setUpdating] = useState(false);
 
   // Filtered contacts
   const filteredContacts = useMemo(() => {
@@ -37,7 +55,17 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({ contacts, accounts, on
     });
   }, [contacts, searchTerm, accountFilter]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSelectContact = (contact: Contact) => {
+    setSelectedContact(contact);
+    setEditFirstName(contact.firstName);
+    setEditLastName(contact.lastName);
+    setEditEmail(contact.email);
+    setEditPhone(contact.phone);
+    setEditJobTitle(contact.jobTitle);
+    setEditAccountId(contact.accountId);
+  };
+
+  const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!firstName || !lastName || !accountId) return;
     setSubmitting(true);
@@ -65,6 +93,27 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({ contacts, accounts, on
     }
   };
 
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedContact || !editFirstName || !editLastName || !editAccountId) return;
+    setUpdating(true);
+    try {
+      await onUpdateContact(selectedContact.id, {
+        firstName: editFirstName,
+        lastName: editLastName,
+        email: editEmail,
+        phone: editPhone,
+        jobTitle: editJobTitle,
+        accountId: editAccountId
+      });
+      setSelectedContact(null);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       {/* Title & Action Bar */}
@@ -74,7 +123,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({ contacts, accounts, on
             Contacts Directory
           </h2>
           <p style={{ color: 'var(--color-whisper-blue)', fontSize: 'var(--text-body)', marginTop: '4px' }}>
-            Manage communication records and client relationships.
+            Click on any contact card below to make updates to job titles, phone numbers, or account linkages.
           </p>
         </div>
         <button className="btn-primary-pill" onClick={() => setShowAddModal(true)}>
@@ -137,12 +186,23 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({ contacts, accounts, on
           filteredContacts.map(contact => {
             const linkedAccount = accounts.find(a => a.id === contact.accountId);
             return (
-              <div key={contact.id} className="glassy-card" style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '12px',
-                padding: '20px'
-              }}>
+              <div 
+                key={contact.id} 
+                className="glassy-card clickable-card" 
+                onClick={() => handleSelectContact(contact)}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px',
+                  padding: '20px',
+                  position: 'relative'
+                }}
+              >
+                {/* Visual edit indicator */}
+                <div style={{ position: 'absolute', top: '16px', right: '16px', color: 'var(--color-whisper-blue)', opacity: 0.5 }}>
+                  <Edit3 size={14} />
+                </div>
+
                 <div>
                   <h4 style={{ fontSize: 'var(--text-subheading)', color: 'var(--color-ghost-white)' }}>
                     {contact.firstName} {contact.lastName}
@@ -186,16 +246,16 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({ contacts, accounts, on
                   marginTop: '4px'
                 }}>
                   {contact.email && (
-                    <a href={`mailto:${contact.email}`} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-comet)' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-comet)' }}>
                       <Mail size={12} style={{ color: 'var(--color-whisper-blue)' }} />
                       <span>{contact.email}</span>
-                    </a>
+                    </span>
                   )}
                   {contact.phone && (
-                    <a href={`tel:${contact.phone}`} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-comet)' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-comet)' }}>
                       <Phone size={12} style={{ color: 'var(--color-whisper-blue)' }} />
                       <span>{contact.phone}</span>
-                    </a>
+                    </span>
                   )}
                 </div>
               </div>
@@ -234,7 +294,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({ contacts, accounts, on
           }}>
             <h3 style={{ fontSize: 'var(--text-heading)', fontFamily: 'var(--font-aeonikpro)' }}>Add New Contact Record</h3>
             
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <form onSubmit={handleAddSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>First Name*</label>
@@ -324,6 +384,129 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({ contacts, accounts, on
                   style={{ borderRadius: 'var(--radius-md)', padding: '8px 20px', fontSize: 'var(--text-body)' }}
                 >
                   {submitting ? 'Adding...' : 'Add Contact'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Contact Modal */}
+      {selectedContact && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: 'rgba(5, 6, 15, 0.8)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 100,
+          backdropFilter: 'blur(4px)'
+        }}>
+          <div className="login-card" style={{
+            width: '100%',
+            maxWidth: '480px',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '20px'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ fontSize: 'var(--text-heading)', fontFamily: 'var(--font-aeonikpro)' }}>Edit Contact Record</h3>
+              <button onClick={() => setSelectedContact(null)} className="btn-icon" style={{ width: '30px', height: '30px' }}>
+                <X size={14} />
+              </button>
+            </div>
+            
+            <form onSubmit={handleEditSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>First Name*</label>
+                  <input
+                    type="text"
+                    className="input-minimal"
+                    value={editFirstName}
+                    onChange={(e) => setEditFirstName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Last Name*</label>
+                  <input
+                    type="text"
+                    className="input-minimal"
+                    value={editLastName}
+                    onChange={(e) => setEditLastName(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Linked Account*</label>
+                <select
+                  className="input-minimal"
+                  value={editAccountId}
+                  onChange={(e) => setEditAccountId(e.target.value)}
+                  required
+                >
+                  <option value="">-- Select Client --</option>
+                  {accounts.map(acc => (
+                    <option key={acc.id} value={acc.id}>{acc.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Job Title</label>
+                <input
+                  type="text"
+                  className="input-minimal"
+                  value={editJobTitle}
+                  onChange={(e) => setEditJobTitle(e.target.value)}
+                />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Email Address</label>
+                <input
+                  type="email"
+                  className="input-minimal"
+                  value={editEmail}
+                  onChange={(e) => setEditEmail(e.target.value)}
+                />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Phone Number</label>
+                <input
+                  type="text"
+                  className="input-minimal"
+                  value={editPhone}
+                  onChange={(e) => setEditPhone(e.target.value)}
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '12px' }}>
+                <button 
+                  type="button" 
+                  className="btn-secondary-outline" 
+                  onClick={() => setSelectedContact(null)}
+                  disabled={updating}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="btn-solid-primary" 
+                  disabled={updating}
+                  style={{ borderRadius: 'var(--radius-md)', padding: '8px 20px', fontSize: 'var(--text-body)' }}
+                >
+                  {updating ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
             </form>

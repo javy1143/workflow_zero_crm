@@ -11,6 +11,12 @@ export interface Account {
   state: string;
   postalCode: string;
   createdAt: string;
+  documents?: {
+    id: string;
+    name: string;
+    size: string;
+    uploadedAt: string;
+  }[];
 }
 
 export interface Contact {
