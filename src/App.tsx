@@ -98,6 +98,32 @@ export default function App() {
     setVendors(prev => [...prev, added]);
   };
 
+  // Handle updates of records
+  const handleUpdateAccount = async (id: string, updates: Partial<Omit<Account, 'id' | 'createdAt'>>) => {
+    await dbService.updateAccount(id, updates);
+    setAccounts(prev => prev.map(a => a.id === id ? { ...a, ...updates } : a));
+  };
+
+  const handleUpdateContact = async (id: string, updates: Partial<Omit<Contact, 'id' | 'createdAt'>>) => {
+    await dbService.updateContact(id, updates);
+    setContacts(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
+  };
+
+  const handleUpdateProject = async (id: string, updates: Partial<Omit<Project, 'id' | 'createdAt'>>) => {
+    await dbService.updateProject(id, updates);
+    setProjects(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
+  };
+
+  const handleUpdateAsset = async (id: string, updates: Partial<Omit<Asset, 'id' | 'createdAt'>>) => {
+    await dbService.updateAsset(id, updates);
+    setAssets(prev => prev.map(a => a.id === id ? { ...a, ...updates } : a));
+  };
+
+  const handleUpdateVendor = async (id: string, updates: Partial<Omit<Vendor, 'id' | 'createdAt'>>) => {
+    await dbService.updateVendor(id, updates);
+    setVendors(prev => prev.map(v => v.id === id ? { ...v, ...updates } : v));
+  };
+
   const handleSignOut = async () => {
     await authService.signOut();
     setActiveTab('dashboard');
@@ -149,15 +175,52 @@ export default function App() {
           />
         );
       case 'accounts':
-        return <AccountsTab accounts={accounts} onAddAccount={handleAddAccount} />;
+        return (
+          <AccountsTab 
+            accounts={accounts} 
+            contacts={contacts}
+            projects={projects}
+            assets={assets}
+            onAddAccount={handleAddAccount} 
+            onUpdateAccount={handleUpdateAccount}
+          />
+        );
       case 'contacts':
-        return <ContactsTab contacts={contacts} accounts={accounts} onAddContact={handleAddContact} />;
+        return (
+          <ContactsTab 
+            contacts={contacts} 
+            accounts={accounts} 
+            onAddContact={handleAddContact} 
+            onUpdateContact={handleUpdateContact}
+          />
+        );
       case 'projects':
-        return <ProjectsTab projects={projects} accounts={accounts} contacts={contacts} onAddProject={handleAddProject} />;
+        return (
+          <ProjectsTab 
+            projects={projects} 
+            accounts={accounts} 
+            contacts={contacts} 
+            onAddProject={handleAddProject} 
+            onUpdateProject={handleUpdateProject}
+          />
+        );
       case 'assets':
-        return <AssetsTab assets={assets} accounts={accounts} onAddAsset={handleAddAsset} />;
+        return (
+          <AssetsTab 
+            assets={assets} 
+            accounts={accounts} 
+            onAddAsset={handleAddAsset} 
+            onUpdateAsset={handleUpdateAsset}
+          />
+        );
       case 'vendors':
-        return <VendorsTab vendors={vendors} onAddVendor={handleAddVendor} />;
+        return (
+          <VendorsTab 
+            vendors={vendors} 
+            onAddVendor={handleAddVendor} 
+            onUpdateVendor={handleUpdateVendor}
+          />
+        );
       case 'reports':
         return <ReportsTab accounts={accounts} contacts={contacts} projects={projects} assets={assets} />;
       default:
