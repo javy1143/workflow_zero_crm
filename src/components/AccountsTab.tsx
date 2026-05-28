@@ -341,14 +341,14 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({
                       {account.status}
                     </span>
                   </td>
-                  <td>{account.industry || '—'}</td>
+                  <td>{account.industry || '-'}</td>
                   <td>
                     {account.city && account.state ? (
                       <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: 'var(--text-caption)' }}>
                         <MapPin size={12} style={{ color: 'var(--color-whisper-blue)' }} />
                         {account.city}, {account.state}
                       </span>
-                    ) : '—'}
+                    ) : '-'}
                   </td>
                   <td>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: 'var(--text-caption)' }}>
@@ -366,7 +366,7 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({
                         <Globe size={12} />
                         {account.website.replace(/^https?:\/\/(www\.)?/, '')}
                       </span>
-                    ) : '—'}
+                    ) : '-'}
                   </td>
                 </tr>
               ))}
@@ -387,7 +387,7 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({
           left: 0,
           width: '100%',
           height: '100%',
-          background: 'rgba(5, 6, 15, 0.8)',
+          background: 'rgba(29, 29, 31, 0.22)',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
@@ -413,7 +413,7 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({
                 border: '1px solid rgba(239, 68, 68, 0.2)',
                 borderRadius: 'var(--radius-md)',
                 padding: '12px',
-                color: '#f87171',
+                color: 'var(--color-caution)',
                 fontSize: 'var(--text-body)',
                 alignItems: 'flex-start'
               }}>
@@ -570,7 +570,7 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({
           left: 0,
           width: '100%',
           height: '100%',
-          background: 'rgba(5, 6, 15, 0.85)',
+          background: 'rgba(29, 29, 31, 0.22)',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
@@ -632,7 +632,7 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({
                     border: '1px solid rgba(239, 68, 68, 0.2)',
                     borderRadius: 'var(--radius-md)',
                     padding: '12px',
-                    color: '#f87171',
+                    color: 'var(--color-caution)',
                     fontSize: 'var(--text-body)',
                     alignItems: 'flex-start'
                   }}>
@@ -822,10 +822,10 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({
                       {accountContacts.length > 0 ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                           {accountContacts.map(c => (
-                            <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-caption)', borderBottom: '1px solid rgba(186, 215, 247, 0.04)', paddingBottom: '6px' }}>
+                            <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-caption)', borderBottom: '1px solid var(--color-silver-mist)', paddingBottom: '6px' }}>
                               <div>
                                 <span style={{ color: 'var(--color-ghost-white)', fontWeight: 500 }}>{c.firstName} {c.lastName}</span>
-                                <span style={{ color: 'var(--color-whisper-blue)', marginLeft: '6px' }}>— {c.jobTitle}</span>
+                                <span style={{ color: 'var(--color-whisper-blue)', marginLeft: '6px' }}>- {c.jobTitle}</span>
                               </div>
                               <div style={{ display: 'flex', gap: '10px', color: 'var(--color-whisper-blue)' }}>
                                 {c.email && <span>{c.email}</span>}
@@ -852,7 +852,7 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({
                                 <span style={{ color: 'var(--color-ghost-white)', fontWeight: 500 }}>{a.name}</span>
                                 <span className="status-badge" style={{ fontSize: '8px', padding: '1px 4px', marginLeft: '6px' }}>{a.serviceProvider}</span>
                               </div>
-                              <span style={{ color: a.status === 'Active' ? '#34d399' : '#fbce4a' }}>{a.status}</span>
+                              <span style={{ color: a.status === 'Active' ? '#248a3d' : 'var(--color-graphite)' }}>{a.status}</span>
                             </div>
                           ))}
                         </div>
@@ -873,7 +873,7 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({
                       {accountProjects.length > 0 ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                           {accountProjects.map(p => (
-                            <div key={p.id} style={{ display: 'flex', flexDirection: 'column', gap: '4px', borderBottom: '1px solid rgba(186, 215, 247, 0.04)', paddingBottom: '8px' }}>
+                            <div key={p.id} style={{ display: 'flex', flexDirection: 'column', gap: '4px', borderBottom: '1px solid var(--color-silver-mist)', paddingBottom: '8px' }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-caption)' }}>
                                 <span style={{ color: 'var(--color-ghost-white)', fontWeight: 500 }}>{p.name}</span>
                                 <span className={`status-badge ${p.status.toLowerCase().replace(' ', '-')}`} style={{ fontSize: '9px', padding: '2px 4px' }}>
@@ -882,7 +882,7 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({
                               </div>
                               {/* Progress mini bar */}
                               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
-                                <div style={{ flexGrow: 1, height: '4px', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '2px', overflow: 'hidden' }}>
+                                <div style={{ flexGrow: 1, height: '4px', background: 'var(--color-silver-mist)', borderRadius: '2px', overflow: 'hidden' }}>
                                   <div style={{ width: `${p.percentageComplete}%`, height: '100%', background: 'var(--color-neon-violet)' }} />
                                 </div>
                                 <span style={{ fontFamily: 'var(--font-dotdigital)', fontSize: '10px' }}>{p.percentageComplete}%</span>
@@ -929,10 +929,10 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'space-between',
-                                background: 'rgba(5, 6, 15, 0.5)',
+                                background: 'var(--color-fog)',
                                 padding: '8px 12px',
                                 borderRadius: 'var(--radius-md)',
-                                border: '1px solid rgba(186, 215, 247, 0.05)'
+                                border: '1px solid var(--color-silver-mist)'
                               }}
                             >
                               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -958,7 +958,7 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({
                                 style={{
                                   background: 'none',
                                   border: 'none',
-                                  color: '#f87171',
+                                  color: 'var(--color-caution)',
                                   cursor: 'pointer',
                                   padding: '4px',
                                   display: 'flex',
@@ -982,12 +982,12 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({
                             alignItems: 'center',
                             gap: '8px',
                             padding: '20px 0',
-                            border: '1px dashed rgba(186, 215, 247, 0.12)',
+                            border: '1px dashed var(--color-silver-mist)',
                             borderRadius: 'var(--radius-md)',
                             color: 'var(--color-whisper-blue)',
                             fontSize: 'var(--text-caption)'
                           }}>
-                            <FileText size={24} style={{ color: 'rgba(186, 215, 247, 0.1)' }} />
+                            <FileText size={24} style={{ color: 'var(--color-silver-mist)' }} />
                             <span>No documentation uploaded for this client yet.</span>
                           </div>
                         )}

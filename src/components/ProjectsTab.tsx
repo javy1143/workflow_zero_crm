@@ -246,7 +246,7 @@ export const ProjectsTab: React.FC<ProjectsTabProps> = ({
           gap: '16px',
           fontSize: 'var(--text-caption)',
           color: 'var(--color-arctic-mist)',
-          borderTop: '1px solid rgba(186, 215, 247, 0.04)',
+          borderTop: '1px solid var(--color-silver-mist)',
           paddingTop: '12px'
         }}>
           <span>Completion Range:</span>
@@ -337,10 +337,10 @@ export const ProjectsTab: React.FC<ProjectsTabProps> = ({
                   <p style={{
                     fontSize: 'var(--text-body)',
                     color: 'var(--color-comet)',
-                    background: 'rgba(5, 6, 15, 0.3)',
+                    background: 'var(--color-fog)',
                     padding: '12px',
                     borderRadius: 'var(--radius-md)',
-                    border: '1px solid rgba(186, 215, 247, 0.03)'
+                    border: '1px solid var(--color-silver-mist)'
                   }}>
                     {project.summary}
                   </p>
@@ -353,16 +353,16 @@ export const ProjectsTab: React.FC<ProjectsTabProps> = ({
                   justifyContent: 'space-between',
                   flexWrap: 'wrap',
                   gap: '16px',
-                  borderTop: '1px solid rgba(186, 215, 247, 0.04)',
+                  borderTop: '1px solid var(--color-silver-mist)',
                   paddingTop: '12px'
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexGrow: 1, maxWidth: '400px' }}>
                     <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-whisper-blue)' }}>Progress:</span>
-                    <div style={{ flexGrow: 1, height: '6px', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '3px', overflow: 'hidden' }}>
+                    <div style={{ flexGrow: 1, height: '6px', background: 'var(--color-silver-mist)', borderRadius: '3px', overflow: 'hidden' }}>
                       <div style={{
                         width: `${project.percentageComplete}%`,
                         height: '100%',
-                        background: project.status === 'Completed' ? '#34d399' : 'var(--color-neon-violet)',
+                        background: project.status === 'Completed' ? '#248a3d' : 'var(--color-neon-violet)',
                         borderRadius: '3px'
                       }} />
                     </div>
@@ -400,7 +400,7 @@ export const ProjectsTab: React.FC<ProjectsTabProps> = ({
           left: 0,
           width: '100%',
           height: '100%',
-          background: 'rgba(5, 6, 15, 0.8)',
+          background: 'rgba(29, 29, 31, 0.22)',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
@@ -577,7 +577,7 @@ export const ProjectsTab: React.FC<ProjectsTabProps> = ({
           left: 0,
           width: '100%',
           height: '100%',
-          background: 'rgba(5, 6, 15, 0.8)',
+          background: 'rgba(29, 29, 31, 0.22)',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',

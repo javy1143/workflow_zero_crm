@@ -60,27 +60,32 @@ export const Dashboard: React.FC<DashboardProps> = ({
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingBottom: '16px',
-        borderBottom: '1px solid rgba(186, 215, 247, 0.08)'
+        paddingBottom: '24px',
+        borderBottom: '1px solid var(--color-silver-mist)'
       }}>
         <div>
-          <h2 style={{ fontSize: 'var(--text-heading-lg)', fontFamily: 'var(--font-aeonikpro)' }}>
-            System Dashboard
+          <h2 style={{
+            fontSize: 'var(--text-heading-lg)',
+            lineHeight: 'var(--leading-heading-lg)',
+            letterSpacing: 'var(--tracking-heading-lg)',
+            fontFamily: 'var(--font-aeonikpro)'
+          }}>
+            Workspace Overview
           </h2>
-          <p style={{ color: 'var(--color-whisper-blue)', fontSize: 'var(--text-body)', marginTop: '4px' }}>
-            Workflow Zero internal control center. Monitoring clients, assets, and project portfolios.
+          <p style={{ color: 'var(--color-graphite)', fontSize: 'var(--text-body)', marginTop: '8px', maxWidth: '620px' }}>
+            A clean view of clients, contacts, assets, and active project momentum.
           </p>
         </div>
         <div style={{
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
-          fontFamily: 'var(--font-dotdigital)',
-          fontSize: 'var(--text-body)',
-          color: 'var(--color-celestial-light)'
+          fontFamily: 'var(--font-sf-pro-text)',
+          fontSize: 'var(--text-caption)',
+          color: 'var(--color-graphite)'
         }}>
-          <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: '#34d399', boxShadow: '0 0 8px #34d399' }} />
-          <span>SYSTEM ONLINE</span>
+          <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: '#248a3d' }} />
+          <span>Live workspace</span>
         </div>
       </div>
 
@@ -92,7 +97,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       }}>
         {/* Accounts Stat */}
         <div className="glassy-card" style={{ display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer' }} onClick={() => setActiveTab('accounts')}>
-          <div style={{ background: 'rgba(186, 215, 247, 0.05)', padding: '12px', borderRadius: 'var(--radius-md)' }}>
+          <div style={{ background: 'var(--color-silver-mist)', padding: '12px', borderRadius: 'var(--radius-md)' }}>
             <Users size={24} style={{ color: 'var(--color-celestial-light)' }} />
           </div>
           <div>
@@ -105,7 +110,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
         {/* Contacts Stat */}
         <div className="glassy-card" style={{ display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer' }} onClick={() => setActiveTab('contacts')}>
-          <div style={{ background: 'rgba(186, 215, 247, 0.05)', padding: '12px', borderRadius: 'var(--radius-md)' }}>
+          <div style={{ background: 'var(--color-silver-mist)', padding: '12px', borderRadius: 'var(--radius-md)' }}>
             <Users size={24} style={{ color: 'var(--color-azure-glow)' }} />
           </div>
           <div>
@@ -118,7 +123,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
         {/* Projects Stat */}
         <div className="glassy-card" style={{ display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer' }} onClick={() => setActiveTab('projects')}>
-          <div style={{ background: 'rgba(186, 215, 247, 0.05)', padding: '12px', borderRadius: 'var(--radius-md)' }}>
+          <div style={{ background: 'var(--color-silver-mist)', padding: '12px', borderRadius: 'var(--radius-md)' }}>
             <FolderGit size={24} style={{ color: 'var(--color-neon-violet)' }} />
           </div>
           <div>
@@ -131,7 +136,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
         {/* Assets Stat */}
         <div className="glassy-card" style={{ display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer' }} onClick={() => setActiveTab('assets')}>
-          <div style={{ background: 'rgba(186, 215, 247, 0.05)', padding: '12px', borderRadius: 'var(--radius-md)' }}>
+          <div style={{ background: 'var(--color-silver-mist)', padding: '12px', borderRadius: 'var(--radius-md)' }}>
             <HardDrive size={24} style={{ color: 'var(--color-arctic-mist)' }} />
           </div>
           <div>
@@ -160,24 +165,24 @@ export const Dashboard: React.FC<DashboardProps> = ({
             {/* Custom SVG Donut Chart */}
             <div style={{ position: 'relative', width: '130px', height: '130px', flexShrink: 0 }}>
               <svg width="100%" height="100%" viewBox="0 0 42 42" className="donut">
-                <circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="rgba(255, 255, 255, 0.05)" strokeWidth="4"></circle>
+                <circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="var(--color-silver-mist)" strokeWidth="4"></circle>
                 {/* Planning */}
-                <circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#fbce4a" strokeWidth="4" 
+                <circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="var(--color-graphite)" strokeWidth="4" 
                   strokeDasharray={`${stats.totalProjects ? (stats.planningProjects / stats.totalProjects) * 100 : 0} ${100 - (stats.totalProjects ? (stats.planningProjects / stats.totalProjects) * 100 : 0)}`}
                   strokeDashoffset="25">
                 </circle>
                 {/* In Progress */}
-                <circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#60a5fa" strokeWidth="4" 
+                <circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="var(--color-cobalt-link)" strokeWidth="4" 
                   strokeDasharray={`${stats.totalProjects ? (stats.inProgressProjects / stats.totalProjects) * 100 : 0} ${100 - (stats.totalProjects ? (stats.inProgressProjects / stats.totalProjects) * 100 : 0)}`}
                   strokeDashoffset={25 - (stats.totalProjects ? (stats.planningProjects / stats.totalProjects) * 100 : 0)}>
                 </circle>
                 {/* Completed */}
-                <circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#34d399" strokeWidth="4" 
+                <circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#248a3d" strokeWidth="4" 
                   strokeDasharray={`${stats.totalProjects ? (stats.completedProjects / stats.totalProjects) * 100 : 0} ${100 - (stats.totalProjects ? (stats.completedProjects / stats.totalProjects) * 100 : 0)}`}
                   strokeDashoffset={25 - (stats.totalProjects ? ((stats.planningProjects + stats.inProgressProjects) / stats.totalProjects) * 100 : 0)}>
                 </circle>
                 {/* On Hold */}
-                <circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#f87171" strokeWidth="4" 
+                <circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="var(--color-caution)" strokeWidth="4" 
                   strokeDasharray={`${stats.totalProjects ? (stats.onHoldProjects / stats.totalProjects) * 100 : 0} ${100 - (stats.totalProjects ? (stats.onHoldProjects / stats.totalProjects) * 100 : 0)}`}
                   strokeDashoffset={25 - (stats.totalProjects ? ((stats.planningProjects + stats.inProgressProjects + stats.completedProjects) / stats.totalProjects) * 100 : 0)}>
                 </circle>
@@ -200,28 +205,28 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flexGrow: 1 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-caption)' }}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#60a5fa' }} />
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--color-cobalt-link)' }} />
                   In Progress
                 </span>
                 <span style={{ fontFamily: 'var(--font-dotdigital)', color: 'var(--color-ghost-white)' }}>{stats.inProgressProjects}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-caption)' }}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#34d399' }} />
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#248a3d' }} />
                   Completed
                 </span>
                 <span style={{ fontFamily: 'var(--font-dotdigital)', color: 'var(--color-ghost-white)' }}>{stats.completedProjects}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-caption)' }}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#fbce4a' }} />
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--color-graphite)' }} />
                   Planning
                 </span>
                 <span style={{ fontFamily: 'var(--font-dotdigital)', color: 'var(--color-ghost-white)' }}>{stats.planningProjects}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-caption)' }}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#f87171' }} />
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--color-caution)' }} />
                   On Hold
                 </span>
                 <span style={{ fontFamily: 'var(--font-dotdigital)', color: 'var(--color-ghost-white)' }}>{stats.onHoldProjects}</span>
@@ -247,7 +252,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     flexDirection: 'column',
                     gap: '6px',
                     paddingBottom: '12px',
-                    borderBottom: '1px solid rgba(186, 215, 247, 0.04)'
+                    borderBottom: '1px solid var(--color-silver-mist)'
                   }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <span style={{ color: 'var(--color-ghost-white)', fontWeight: 500, fontSize: 'var(--text-body)' }}>
@@ -255,7 +260,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       </span>
                       <span style={{ 
                         fontSize: '11px', 
-                        color: project.status === 'In Progress' ? '#60a5fa' : '#fbce4a' 
+                        color: project.status === 'In Progress' ? 'var(--color-cobalt-link)' : 'var(--color-graphite)' 
                       }}>
                         {project.status}
                       </span>
@@ -265,7 +270,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       <span>Target: {project.targetDate}</span>
                     </div>
                     {/* Completion bar */}
-                    <div style={{ width: '100%', height: '4px', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '2px', overflow: 'hidden', marginTop: '2px' }}>
+                    <div style={{ width: '100%', height: '4px', background: 'var(--color-silver-mist)', borderRadius: '2px', overflow: 'hidden', marginTop: '2px' }}>
                       <div style={{ width: `${project.percentageComplete}%`, height: '100%', background: 'var(--color-neon-violet)', borderRadius: '2px' }} />
                     </div>
                   </div>
@@ -319,8 +324,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     </td>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div style={{ width: '80px', height: '6px', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '3px', overflow: 'hidden' }}>
-                          <div style={{ width: `${project.percentageComplete}%`, height: '100%', background: project.status === 'Completed' ? '#34d399' : 'var(--color-neon-violet)' }} />
+                        <div style={{ width: '80px', height: '6px', background: 'var(--color-silver-mist)', borderRadius: '3px', overflow: 'hidden' }}>
+                          <div style={{ width: `${project.percentageComplete}%`, height: '100%', background: project.status === 'Completed' ? '#248a3d' : 'var(--color-neon-violet)' }} />
                         </div>
                         <span style={{ fontFamily: 'var(--font-dotdigital)', fontSize: 'var(--text-caption)' }}>{project.percentageComplete}%</span>
                       </div>

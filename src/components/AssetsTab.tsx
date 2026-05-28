@@ -138,11 +138,11 @@ export const AssetsTab: React.FC<AssetsTabProps> = ({
       case 'Make':
         return <Network size={20} style={style} />;
       case 'Google':
-        return <Cloud size={20} style={{ color: '#fbce4a' }} />;
+        return <Cloud size={20} style={{ color: 'var(--color-graphite)' }} />;
       case 'OpenAI':
-        return <Code size={20} style={{ color: '#a78bfa' }} />;
+        return <Code size={20} style={{ color: 'var(--color-slate)' }} />;
       case 'AWS':
-        return <Shield size={20} style={{ color: '#fb923c' }} />;
+        return <Shield size={20} style={{ color: 'var(--color-caution)' }} />;
       default:
         return <Key size={20} style={style} />;
     }
@@ -271,7 +271,7 @@ export const AssetsTab: React.FC<AssetsTabProps> = ({
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingRight: '12px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ background: 'rgba(5, 6, 15, 0.5)', padding: '8px', borderRadius: 'var(--radius-md)', border: '1px solid rgba(186, 215, 247, 0.05)' }}>
+                    <div style={{ background: 'var(--color-fog)', padding: '8px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-silver-mist)' }}>
                       {renderProviderIcon(asset.serviceProvider)}
                     </div>
                     <div>
@@ -290,9 +290,9 @@ export const AssetsTab: React.FC<AssetsTabProps> = ({
 
                 {/* Secure Details Box */}
                 <div style={{
-                  background: 'rgba(5, 6, 15, 0.7)',
+                  background: 'var(--color-fog)',
                   borderRadius: 'var(--radius-md)',
-                  border: '1px solid rgba(186, 215, 247, 0.08)',
+                  border: '1px solid var(--color-silver-mist)',
                   padding: '12px',
                   display: 'flex',
                   flexDirection: 'column',
@@ -337,7 +337,7 @@ export const AssetsTab: React.FC<AssetsTabProps> = ({
                     wordBreak: 'break-all',
                     letterSpacing: isCredentialsVisible ? 'normal' : '0.2em'
                   }}>
-                    {isCredentialsVisible ? asset.details : '••••••••••••••••••••••••••••••••••••'}
+                    {isCredentialsVisible ? asset.details : 'Hidden credentials'}
                   </div>
                 </div>
 
@@ -364,7 +364,7 @@ export const AssetsTab: React.FC<AssetsTabProps> = ({
           left: 0,
           width: '100%',
           height: '100%',
-          background: 'rgba(5, 6, 15, 0.8)',
+          background: 'rgba(29, 29, 31, 0.22)',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
@@ -495,7 +495,7 @@ export const AssetsTab: React.FC<AssetsTabProps> = ({
           left: 0,
           width: '100%',
           height: '100%',
-          background: 'rgba(5, 6, 15, 0.8)',
+          background: 'rgba(29, 29, 31, 0.22)',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',

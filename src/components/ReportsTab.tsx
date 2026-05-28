@@ -103,8 +103,8 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
           {/* Printable Report Document */}
           <div className="glassy-card" style={{
             padding: '40px',
-            background: 'rgba(186, 214, 247, 0.02)',
-            border: '1px solid rgba(186, 215, 247, 0.08)',
+            background: 'var(--color-fog)',
+            border: '1px solid var(--color-silver-mist)',
             display: 'flex',
             flexDirection: 'column',
             gap: '32px',
@@ -115,7 +115,7 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'flex-start',
-              borderBottom: '1px solid rgba(186, 215, 247, 0.12)',
+              borderBottom: '1px solid var(--color-silver-mist)',
               paddingBottom: '24px'
             }}>
               <div>
@@ -150,25 +150,25 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
               gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
               gap: '16px'
             }}>
-              <div style={{ background: 'rgba(5, 6, 15, 0.4)', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid rgba(186, 215, 247, 0.04)' }}>
+              <div style={{ background: 'var(--color-fog)', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-silver-mist)' }}>
                 <div style={{ fontSize: 'var(--text-caption)', color: 'var(--color-whisper-blue)' }}>Total Projects</div>
                 <div style={{ fontSize: '24px', fontWeight: 600, fontFamily: 'var(--font-dotdigital)', color: 'var(--color-ghost-white)', marginTop: '4px' }}>
                   {accountReportData.totalProjects}
                 </div>
               </div>
-              <div style={{ background: 'rgba(5, 6, 15, 0.4)', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid rgba(186, 215, 247, 0.04)' }}>
+              <div style={{ background: 'var(--color-fog)', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-silver-mist)' }}>
                 <div style={{ fontSize: 'var(--text-caption)', color: 'var(--color-whisper-blue)' }}>Completed Projects</div>
-                <div style={{ fontSize: '24px', fontWeight: 600, fontFamily: 'var(--font-dotdigital)', color: '#34d399', marginTop: '4px' }}>
+                <div style={{ fontSize: '24px', fontWeight: 600, fontFamily: 'var(--font-dotdigital)', color: '#248a3d', marginTop: '4px' }}>
                   {accountReportData.completedProjects.length}
                 </div>
               </div>
-              <div style={{ background: 'rgba(5, 6, 15, 0.4)', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid rgba(186, 215, 247, 0.04)' }}>
+              <div style={{ background: 'var(--color-fog)', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-silver-mist)' }}>
                 <div style={{ fontSize: 'var(--text-caption)', color: 'var(--color-whisper-blue)' }}>Ongoing Pipelines</div>
-                <div style={{ fontSize: '24px', fontWeight: 600, fontFamily: 'var(--font-dotdigital)', color: '#60a5fa', marginTop: '4px' }}>
+                <div style={{ fontSize: '24px', fontWeight: 600, fontFamily: 'var(--font-dotdigital)', color: 'var(--color-cobalt-link)', marginTop: '4px' }}>
                   {accountReportData.ongoingProjects.length}
                 </div>
               </div>
-              <div style={{ background: 'rgba(5, 6, 15, 0.4)', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid rgba(186, 215, 247, 0.04)' }}>
+              <div style={{ background: 'var(--color-fog)', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-silver-mist)' }}>
                 <div style={{ fontSize: 'var(--text-caption)', color: 'var(--color-whisper-blue)' }}>Avg Progress Rate</div>
                 <div style={{ fontSize: '24px', fontWeight: 600, fontFamily: 'var(--font-dotdigital)', color: 'var(--color-celestial-light)', marginTop: '4px' }}>
                   {accountReportData.avgCompletion}%
@@ -184,7 +184,7 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
             }}>
               {/* Account Address Card */}
               <div>
-                <h3 style={{ fontSize: 'var(--text-body-lg)', color: 'var(--color-ghost-white)', borderBottom: '1px solid rgba(186, 215, 247, 0.06)', paddingBottom: '8px', marginBottom: '12px' }}>
+                <h3 style={{ fontSize: 'var(--text-body-lg)', color: 'var(--color-ghost-white)', borderBottom: '1px solid var(--color-silver-mist)', paddingBottom: '8px', marginBottom: '12px' }}>
                   Account Information
                 </h3>
                 <div style={{ fontSize: 'var(--text-body)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -205,7 +205,7 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
 
               {/* Linked Contacts list */}
               <div>
-                <h3 style={{ fontSize: 'var(--text-body-lg)', color: 'var(--color-ghost-white)', borderBottom: '1px solid rgba(186, 215, 247, 0.06)', paddingBottom: '8px', marginBottom: '12px' }}>
+                <h3 style={{ fontSize: 'var(--text-body-lg)', color: 'var(--color-ghost-white)', borderBottom: '1px solid var(--color-silver-mist)', paddingBottom: '8px', marginBottom: '12px' }}>
                   Account Contacts ({accountReportData.contacts.length})
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -225,7 +225,7 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
 
             {/* Project Status Portfolios (Ongoing and Completed) */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              <h3 style={{ fontSize: 'var(--text-subheading)', color: 'var(--color-ghost-white)', borderBottom: '1px solid rgba(186, 215, 247, 0.08)', paddingBottom: '8px' }}>
+              <h3 style={{ fontSize: 'var(--text-subheading)', color: 'var(--color-ghost-white)', borderBottom: '1px solid var(--color-silver-mist)', paddingBottom: '8px' }}>
                 Project Portfolio Details
               </h3>
 
@@ -239,8 +239,8 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     {accountReportData.ongoingProjects.map(proj => (
                       <div key={proj.id} style={{
-                        background: 'rgba(5, 6, 15, 0.3)',
-                        border: '1px solid rgba(186, 215, 247, 0.04)',
+                        background: 'var(--color-fog)',
+                        border: '1px solid var(--color-silver-mist)',
                         borderRadius: 'var(--radius-md)',
                         padding: '16px',
                         display: 'flex',
@@ -259,7 +259,7 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
                         
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '4px' }}>
                           <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-whisper-blue)' }}>Progress:</span>
-                          <div style={{ flexGrow: 1, height: '6px', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '3px', overflow: 'hidden', maxWidth: '300px' }}>
+                          <div style={{ flexGrow: 1, height: '6px', background: 'var(--color-silver-mist)', borderRadius: '3px', overflow: 'hidden', maxWidth: '300px' }}>
                             <div style={{ width: `${proj.percentageComplete}%`, height: '100%', background: 'var(--color-neon-violet)' }} />
                           </div>
                           <span style={{ fontFamily: 'var(--font-dotdigital)', fontSize: 'var(--text-caption)', color: 'var(--color-ghost-white)' }}>
@@ -282,7 +282,7 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
 
               {/* Completed Projects */}
               <div style={{ marginTop: '12px' }}>
-                <h4 style={{ fontSize: 'var(--text-body-lg)', color: '#34d399', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h4 style={{ fontSize: 'var(--text-body-lg)', color: '#248a3d', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <CheckCircle size={16} /> Completed Pipelines ({accountReportData.completedProjects.length})
                 </h4>
 
@@ -290,7 +290,7 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     {accountReportData.completedProjects.map(proj => (
                       <div key={proj.id} style={{
-                        background: 'rgba(5, 6, 15, 0.1)',
+                        background: 'var(--color-fog)',
                         border: '1px solid rgba(52, 211, 153, 0.08)',
                         borderRadius: 'var(--radius-md)',
                         padding: '16px',
@@ -302,7 +302,7 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
                           <span style={{ color: 'var(--color-ghost-white)', fontWeight: 500 }}>
                             {proj.name}
                           </span>
-                          <span style={{ color: '#34d399', fontSize: 'var(--text-caption)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span style={{ color: '#248a3d', fontSize: 'var(--text-caption)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                             <CheckCircle size={12} /> Completed
                           </span>
                         </div>
@@ -323,7 +323,7 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
 
             {/* Linked Systems / Assets */}
             <div>
-              <h3 style={{ fontSize: 'var(--text-subheading)', color: 'var(--color-ghost-white)', borderBottom: '1px solid rgba(186, 215, 247, 0.08)', paddingBottom: '8px', marginBottom: '16px' }}>
+              <h3 style={{ fontSize: 'var(--text-subheading)', color: 'var(--color-ghost-white)', borderBottom: '1px solid var(--color-silver-mist)', paddingBottom: '8px', marginBottom: '16px' }}>
                 Account Systems & Integrations ({accountReportData.assets.length})
               </h3>
               
@@ -335,8 +335,8 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
                 }}>
                   {accountReportData.assets.map(asset => (
                     <div key={asset.id} style={{
-                      background: 'rgba(5, 6, 15, 0.3)',
-                      border: '1px solid rgba(186, 215, 247, 0.04)',
+                      background: 'var(--color-fog)',
+                      border: '1px solid var(--color-silver-mist)',
                       borderRadius: 'var(--radius-md)',
                       padding: '12px'
                     }}>
@@ -358,7 +358,7 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              borderTop: '1px solid rgba(186, 215, 247, 0.12)',
+              borderTop: '1px solid var(--color-silver-mist)',
               paddingTop: '20px',
               marginTop: '12px',
               fontSize: 'var(--text-caption)',

@@ -226,10 +226,10 @@ export const VendorsTab: React.FC<VendorsTabProps> = ({
                 <p style={{
                   fontSize: 'var(--text-body)',
                   color: 'var(--color-comet)',
-                  background: 'rgba(5, 6, 15, 0.2)',
+                  background: 'var(--color-fog)',
                   padding: '10px 12px',
                   borderRadius: 'var(--radius-md)',
-                  border: '1px solid rgba(186, 215, 247, 0.03)'
+                  border: '1px solid var(--color-silver-mist)'
                 }}>
                   {vendor.notes}
                 </p>
@@ -240,7 +240,7 @@ export const VendorsTab: React.FC<VendorsTabProps> = ({
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '8px',
-                borderTop: '1px solid rgba(186, 215, 247, 0.04)',
+                borderTop: '1px solid var(--color-silver-mist)',
                 paddingTop: '12px',
                 fontSize: 'var(--text-caption)',
                 color: 'var(--color-whisper-blue)'
@@ -282,7 +282,7 @@ export const VendorsTab: React.FC<VendorsTabProps> = ({
           left: 0,
           width: '100%',
           height: '100%',
-          background: 'rgba(5, 6, 15, 0.8)',
+          background: 'rgba(29, 29, 31, 0.22)',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
@@ -402,7 +402,7 @@ export const VendorsTab: React.FC<VendorsTabProps> = ({
           left: 0,
           width: '100%',
           height: '100%',
-          background: 'rgba(5, 6, 15, 0.8)',
+          background: 'rgba(29, 29, 31, 0.22)',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',

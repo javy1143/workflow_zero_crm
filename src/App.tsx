@@ -136,12 +136,12 @@ export default function App() {
         alignItems: 'center',
         justifyContent: 'center',
         minHeight: '100vh',
-        background: 'var(--color-midnight-abyss)',
-        color: 'var(--color-ghost-white)',
-        fontFamily: 'var(--font-dotdigital)',
-        fontSize: 'var(--text-body-lg)'
+        background: 'var(--color-fog)',
+        color: 'var(--color-ink)',
+        fontFamily: 'var(--font-sf-pro-text)',
+        fontSize: 'var(--text-body)'
       }}>
-        LOADING COMMAND CENTER SYSTEM...
+        Loading workspace...
       </div>
     );
   }
@@ -229,19 +229,19 @@ export default function App() {
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', flexDirection: 'column' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', flexDirection: 'column', background: 'var(--color-fog)' }}>
       {/* Top Header Navigation */}
       <header className="no-print" style={{
-        background: 'rgba(5, 6, 15, 0.95)',
-        borderBottom: '1px solid rgba(186, 215, 247, 0.08)',
-        padding: '12px 24px',
+        background: 'rgba(245, 245, 247, 0.86)',
+        borderBottom: '1px solid var(--color-silver-mist)',
+        padding: '8px 24px',
         position: 'sticky',
         top: 0,
         zIndex: 50,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        backdropFilter: 'blur(10px)'
+        backdropFilter: 'blur(20px)'
       }}>
         {/* Brand/Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={() => setActiveTab('dashboard')}>
@@ -252,10 +252,10 @@ export default function App() {
           />
           <span style={{
             fontFamily: 'var(--font-aeonikpro)',
-            fontSize: 'var(--text-body-lg)',
-            fontWeight: 500,
-            color: 'var(--color-ghost-white)',
-            letterSpacing: '0.05em'
+            fontSize: 'var(--text-body)',
+            fontWeight: 600,
+            color: 'var(--color-ink)',
+            letterSpacing: 'var(--tracking-body)'
           }}>
             CRM
           </span>
@@ -272,14 +272,15 @@ export default function App() {
                   setActiveTab(item.id);
                   setMobileMenuOpen(false);
                 }}
-                className={isActive ? 'btn-primary-pill' : 'btn-secondary-outline'}
+                className="btn-secondary-outline"
                 style={{
                   padding: '6px 14px',
                   fontSize: 'var(--text-caption)',
-                  background: isActive ? 'rgba(186, 214, 247, 0.06)' : 'transparent',
-                  border: isActive ? '1px solid rgba(255, 255, 255, 0.2)' : '1px solid transparent',
-                  color: isActive ? 'var(--color-ghost-white)' : 'var(--color-comet)',
-                  borderRadius: 'var(--radius-full)'
+                  background: isActive ? 'rgba(210, 210, 215, 0.64)' : 'transparent',
+                  border: '1px solid transparent',
+                  color: 'var(--color-ink)',
+                  borderRadius: 'var(--radius-full)',
+                  backdropFilter: isActive ? 'blur(20px)' : 'none'
                 }}
               >
                 <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -298,16 +299,16 @@ export default function App() {
               width: '28px',
               height: '28px',
               borderRadius: '50%',
-              background: 'var(--color-storm-gray)',
-              border: '1px solid rgba(186, 215, 247, 0.12)',
+              background: 'var(--color-snow)',
+              border: '1px solid var(--color-silver-mist)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: 'var(--color-ghost-white)'
+              color: 'var(--color-ink)'
             }}>
               <UserIcon size={14} />
             </div>
-            <span style={{ color: 'var(--color-arctic-mist)' }}>
+            <span style={{ color: 'var(--color-graphite)' }}>
               {user.displayName || user.email}
             </span>
           </div>
@@ -338,14 +339,14 @@ export default function App() {
           top: '56px',
           left: 0,
           width: '100%',
-          background: 'rgba(5, 6, 15, 0.98)',
-          borderBottom: '1px solid rgba(186, 215, 247, 0.12)',
+          background: 'rgba(255, 255, 255, 0.96)',
+          borderBottom: '1px solid var(--color-silver-mist)',
           padding: '16px',
           zIndex: 49,
           display: 'flex',
           flexDirection: 'column',
           gap: '12px',
-          backdropFilter: 'blur(10px)'
+          backdropFilter: 'blur(20px)'
         }}>
           {navItems.map(item => {
             const isActive = activeTab === item.id;
@@ -356,15 +357,15 @@ export default function App() {
                   setActiveTab(item.id);
                   setMobileMenuOpen(false);
                 }}
-                className={isActive ? 'btn-primary-pill' : 'btn-secondary-outline'}
+                className="btn-secondary-outline"
                 style={{
                   width: '100%',
                   justifyContent: 'flex-start',
                   padding: '10px 16px',
                   fontSize: 'var(--text-body)',
-                  background: isActive ? 'rgba(186, 214, 247, 0.08)' : 'transparent',
-                  borderColor: isActive ? 'rgba(255, 255, 255, 0.2)' : 'transparent',
-                  color: isActive ? 'var(--color-ghost-white)' : 'var(--color-comet)',
+                  background: isActive ? 'rgba(210, 210, 215, 0.64)' : 'transparent',
+                  borderColor: 'transparent',
+                  color: 'var(--color-ink)',
                 }}
               >
                 <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -380,11 +381,11 @@ export default function App() {
             justifyContent: 'space-between',
             alignItems: 'center',
             marginTop: '12px',
-            borderTop: '1px solid rgba(186, 215, 247, 0.08)',
+            borderTop: '1px solid var(--color-silver-mist)',
             paddingTop: '16px',
             fontSize: 'var(--text-caption)'
           }}>
-            <span style={{ color: 'var(--color-whisper-blue)' }}>
+            <span style={{ color: 'var(--color-graphite)' }}>
               Logged in: {user.displayName || user.email}
             </span>
             <button 
@@ -404,7 +405,7 @@ export default function App() {
         width: '100%',
         maxWidth: '1200px',
         margin: '0 auto',
-        padding: '32px 24px',
+        padding: '44px 24px 64px',
         zIndex: 10
       }}>
         {renderActiveTab()}

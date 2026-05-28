@@ -9,7 +9,6 @@ interface SignInProps {
 export const SignIn: React.FC<SignInProps> = ({ onAuthSuccess }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -19,11 +18,7 @@ export const SignIn: React.FC<SignInProps> = ({ onAuthSuccess }) => {
     setError(null);
 
     try {
-      if (isSignUp) {
-        await authService.signUp(email, password);
-      } else {
-        await authService.signIn(email, password);
-      }
+      await authService.signIn(email, password);
       onAuthSuccess();
     } catch (err: any) {
       setError(err.message || 'An error occurred during authentication.');
@@ -41,21 +36,9 @@ export const SignIn: React.FC<SignInProps> = ({ onAuthSuccess }) => {
       alignItems: 'center',
       justifyContent: 'center',
       minHeight: '100vh',
-      background: 'var(--color-midnight-abyss)',
-      padding: '20px'
+      background: 'var(--color-fog)',
+      padding: '32px 20px'
     }}>
-      {/* Background ambient light overlay */}
-      <div style={{
-        position: 'absolute',
-        width: '500px',
-        height: '500px',
-        background: 'radial-gradient(circle, rgba(102, 58, 243, 0.08) 0%, rgba(5, 6, 15, 0) 70%)',
-        top: '20%',
-        left: 'calc(50% - 250px)',
-        zIndex: 0,
-        pointerEvents: 'none'
-      }} />
-
       <div style={{ zIndex: 1, width: '100%', maxWidth: '420px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
         {/* Brand Logo and Title */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', textAlign: 'center' }}>
@@ -67,17 +50,18 @@ export const SignIn: React.FC<SignInProps> = ({ onAuthSuccess }) => {
           <h1 style={{ 
             fontSize: 'var(--text-heading-lg)', 
             fontFamily: 'var(--font-aeonikpro)',
-            fontWeight: 500,
-            color: 'var(--color-ghost-white)'
+            fontWeight: 700,
+            color: 'var(--color-ink)',
+            letterSpacing: 'var(--tracking-heading-lg)'
           }}>
             Workflow Zero CRM
           </h1>
           <p style={{ 
             fontSize: 'var(--text-body)', 
-            color: 'var(--color-whisper-blue)',
+            color: 'var(--color-graphite)',
             fontFamily: 'var(--font-untitled-sans)'
           }}>
-            Midnight Control Center login
+            Sign in to your client workspace.
           </p>
         </div>
 
@@ -91,7 +75,7 @@ export const SignIn: React.FC<SignInProps> = ({ onAuthSuccess }) => {
               border: '1px solid rgba(239, 68, 68, 0.2)',
               borderRadius: 'var(--radius-md)',
               padding: '12px',
-              color: '#f87171',
+              color: 'var(--color-caution)',
               fontSize: 'var(--text-body)',
               alignItems: 'flex-start'
             }}>
@@ -104,9 +88,9 @@ export const SignIn: React.FC<SignInProps> = ({ onAuthSuccess }) => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <label style={{ 
                 fontSize: 'var(--text-caption)', 
-                color: 'var(--color-arctic-mist)',
+                color: 'var(--color-graphite)',
                 fontFamily: 'var(--font-untitled-sans)',
-                fontWeight: 500
+                fontWeight: 600
               }}>
                 Email Address
               </label>
@@ -125,9 +109,9 @@ export const SignIn: React.FC<SignInProps> = ({ onAuthSuccess }) => {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <label style={{ 
                   fontSize: 'var(--text-caption)', 
-                  color: 'var(--color-arctic-mist)',
+                  color: 'var(--color-graphite)',
                   fontFamily: 'var(--font-untitled-sans)',
-                  fontWeight: 500
+                  fontWeight: 600
                 }}>
                   Password
                 </label>
@@ -135,7 +119,7 @@ export const SignIn: React.FC<SignInProps> = ({ onAuthSuccess }) => {
               <input
                 type="password"
                 className="input-minimal"
-                placeholder="••••••••"
+                placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -149,28 +133,9 @@ export const SignIn: React.FC<SignInProps> = ({ onAuthSuccess }) => {
               disabled={loading}
               style={{ marginTop: '8px', padding: '12px' }}
             >
-              {loading ? "Authenticating..." : isSignUp ? "Create Workspace Account" : "Access Console"}
+              {loading ? "Signing in..." : "Sign In"}
             </button>
           </form>
-
-          {/* Action buttons to toggle Mode */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <button
-              onClick={() => setIsSignUp(!isSignUp)}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'var(--color-azure-glow)',
-                fontSize: 'var(--text-caption)',
-                cursor: 'pointer',
-                textAlign: 'center',
-                fontFamily: 'var(--font-untitled-sans)',
-                textDecoration: 'underline'
-              }}
-            >
-              {isSignUp ? "Already have an account? Sign In" : "Don't have an account? Sign Up"}
-            </button>
-          </div>
         </div>
       </div>
     </div>

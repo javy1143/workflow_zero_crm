@@ -224,10 +224,10 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
-                  background: 'rgba(5, 6, 15, 0.4)',
+                  background: 'var(--color-fog)',
                   padding: '8px 12px',
                   borderRadius: 'var(--radius-md)',
-                  border: '1px solid rgba(186, 215, 247, 0.04)',
+                  border: '1px solid var(--color-silver-mist)',
                   fontSize: 'var(--text-caption)'
                 }}>
                   <Building size={14} style={{ color: 'var(--color-celestial-light)' }} />
@@ -241,7 +241,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
                   flexDirection: 'column', 
                   gap: '6px', 
                   fontSize: 'var(--text-caption)',
-                  borderTop: '1px solid rgba(186, 215, 247, 0.04)',
+                  borderTop: '1px solid var(--color-silver-mist)',
                   paddingTop: '10px',
                   marginTop: '4px'
                 }}>
@@ -276,7 +276,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
           left: 0,
           width: '100%',
           height: '100%',
-          background: 'rgba(5, 6, 15, 0.8)',
+          background: 'rgba(29, 29, 31, 0.22)',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
@@ -399,7 +399,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
           left: 0,
           width: '100%',
           height: '100%',
-          background: 'rgba(5, 6, 15, 0.8)',
+          background: 'rgba(29, 29, 31, 0.22)',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
