@@ -1,19 +1,23 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Asset, Account } from '../types';
-import { Plus, Search, Filter, Eye, EyeOff, Key, Code, Cloud, Network, Shield, Edit3, X } from 'lucide-react';
+import { Plus, Search, Filter, Eye, EyeOff, Key, Code, Cloud, Network, Shield, Edit3, X, Home, ChevronRight, ArrowLeft } from 'lucide-react';
 
 interface AssetsTabProps {
   assets: Asset[];
   accounts: Account[];
   onAddAsset: (asset: Omit<Asset, 'id' | 'createdAt'>) => Promise<void>;
   onUpdateAsset: (id: string, updates: Partial<Omit<Asset, 'id' | 'createdAt'>>) => Promise<void>;
+  selectedAssetId?: string | null;
+  onNavigate: (tab: string, id?: string) => void;
 }
 
 export const AssetsTab: React.FC<AssetsTabProps> = ({ 
   assets, 
   accounts, 
   onAddAsset,
-  onUpdateAsset
+  onUpdateAsset,
+  selectedAssetId,
+  onNavigate
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [providerFilter, setProviderFilter] = useState<string>('ALL');
@@ -72,14 +76,28 @@ export const AssetsTab: React.FC<AssetsTabProps> = ({
     });
   }, [assets, accounts, searchTerm, providerFilter, accountFilter, statusFilter]);
 
+  // Sync selectedAssetId from URL
+  useEffect(() => {
+    if (selectedAssetId) {
+      const asset = assets.find(a => a.id === selectedAssetId);
+      if (asset) {
+        setSelectedAsset(asset);
+        setEditName(asset.name);
+        setEditServiceProvider(asset.serviceProvider);
+        setEditDetails(asset.details);
+        setEditAccountId(asset.accountId);
+        setEditStatus(asset.status);
+        setEditNotes(asset.notes);
+      } else {
+        setSelectedAsset(null);
+      }
+    } else {
+      setSelectedAsset(null);
+    }
+  }, [selectedAssetId, assets]);
+
   const handleSelectAsset = (asset: Asset) => {
-    setSelectedAsset(asset);
-    setEditName(asset.name);
-    setEditServiceProvider(asset.serviceProvider);
-    setEditDetails(asset.details);
-    setEditAccountId(asset.accountId);
-    setEditStatus(asset.status);
-    setEditNotes(asset.notes);
+    onNavigate('assets', asset.id);
   };
 
   const handleAddSubmit = async (e: React.FormEvent) => {
@@ -123,7 +141,7 @@ export const AssetsTab: React.FC<AssetsTabProps> = ({
         status: editStatus,
         notes: editNotes
       });
-      setSelectedAsset(null);
+      onNavigate('assets');
     } catch (err) {
       console.error(err);
     } finally {
@@ -147,6 +165,177 @@ export const AssetsTab: React.FC<AssetsTabProps> = ({
         return <Key size={20} style={style} />;
     }
   };
+
+  if (selectedAssetId) {
+    if (!selectedAsset) {
+      return (
+        <div style={{ padding: '40px', textAlign: 'center' }}>
+          <h3 style={{ color: 'var(--color-ghost-white)' }}>Asset Record not found</h3>
+          <button className="btn-secondary-outline" onClick={() => onNavigate('assets')} style={{ marginTop: '16px' }}>
+            <ArrowLeft size={16} style={{ marginRight: '8px' }} /> Back to Assets Directory
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        {/* Breadcrumb Navigation */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          fontSize: 'var(--text-caption)',
+          color: 'var(--color-graphite)',
+          paddingBottom: '8px'
+        }}>
+          <span 
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }} 
+            onClick={() => onNavigate('dashboard')}
+          >
+            <Home size={14} />
+          </span>
+          <ChevronRight size={12} />
+          <span 
+            style={{ cursor: 'pointer' }} 
+            onClick={() => onNavigate('assets')}
+          >
+            assets
+          </span>
+          <ChevronRight size={12} />
+          <span style={{ color: 'var(--color-ink)', fontWeight: 500 }}>
+            {selectedAsset.id}
+          </span>
+        </div>
+
+        {/* Details page container */}
+        <div className="login-card" style={{
+          width: '100%',
+          maxWidth: '500px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '20px',
+          position: 'relative'
+        }}>
+          {/* Back button */}
+          <button 
+            onClick={() => onNavigate('assets')}
+            className="btn-icon"
+            style={{
+              position: 'absolute',
+              top: '20px',
+              right: '20px',
+              zIndex: 10
+            }}
+            title="Back to List"
+          >
+            <ArrowLeft size={16} />
+          </button>
+
+          <h3 style={{ fontSize: 'var(--text-heading)', fontFamily: 'var(--font-aeonikpro)', color: 'var(--color-ghost-white)' }}>Edit System Asset</h3>
+          
+          <form onSubmit={handleEditSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Asset Identifier Name*</label>
+              <input
+                type="text"
+                className="input-minimal"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                required
+              />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Service Provider</label>
+                <select
+                  className="input-minimal"
+                  value={editServiceProvider}
+                  onChange={(e) => setEditServiceProvider(e.target.value as any)}
+                >
+                  <option value="Make">Make.com</option>
+                  <option value="Google">Google Cloud</option>
+                  <option value="OpenAI">OpenAI Workspace</option>
+                  <option value="AWS">AWS</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Asset Status</label>
+                <select
+                  className="input-minimal"
+                  value={editStatus}
+                  onChange={(e) => setEditStatus(e.target.value as any)}
+                >
+                  <option value="Active">Active</option>
+                  <option value="Testing">Testing</option>
+                  <option value="Deprecated">Deprecated</option>
+                </select>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Linked Client Account*</label>
+              <select
+                className="input-minimal"
+                value={editAccountId}
+                onChange={(e) => setEditAccountId(e.target.value)}
+                required
+              >
+                <option value="">-- Select Client --</option>
+                {accounts.map(acc => (
+                  <option key={acc.id} value={acc.id}>{acc.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Credentials & Configuration details*</label>
+              <textarea
+                className="input-minimal"
+                rows={4}
+                value={editDetails}
+                onChange={(e) => setEditDetails(e.target.value)}
+                required
+                style={{ fontFamily: 'var(--font-dotdigital)', fontSize: '13px', resize: 'vertical' }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Internal Usage Notes</label>
+              <textarea
+                className="input-minimal"
+                rows={2}
+                value={editNotes}
+                onChange={(e) => setEditNotes(e.target.value)}
+                style={{ resize: 'vertical' }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '8px' }}>
+              <button 
+                type="button" 
+                className="btn-secondary-outline" 
+                onClick={() => onNavigate('assets')}
+                disabled={updating}
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                className="btn-solid-primary" 
+                disabled={updating}
+                style={{ borderRadius: 'var(--radius-md)', padding: '8px 20px', fontSize: 'var(--text-body)' }}
+              >
+                {updating ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -480,139 +669,6 @@ export const AssetsTab: React.FC<AssetsTabProps> = ({
                   style={{ borderRadius: 'var(--radius-md)', padding: '8px 20px', fontSize: 'var(--text-body)' }}
                 >
                   {submitting ? 'Adding...' : 'Add System Asset'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Asset Modal */}
-      {selectedAsset && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          background: 'rgba(29, 29, 31, 0.22)',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 100,
-          backdropFilter: 'blur(4px)'
-        }}>
-          <div className="login-card" style={{
-            width: '100%',
-            maxWidth: '500px',
-            maxHeight: '90vh',
-            overflowY: 'auto',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '20px'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 style={{ fontSize: 'var(--text-heading)', fontFamily: 'var(--font-aeonikpro)' }}>Edit System Asset</h3>
-              <button onClick={() => setSelectedAsset(null)} className="btn-icon" style={{ width: '30px', height: '30px' }}>
-                <X size={14} />
-              </button>
-            </div>
-            
-            <form onSubmit={handleEditSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Asset Identifier Name*</label>
-                <input
-                  type="text"
-                  className="input-minimal"
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Service Provider</label>
-                  <select
-                    className="input-minimal"
-                    value={editServiceProvider}
-                    onChange={(e) => setEditServiceProvider(e.target.value as any)}
-                  >
-                    <option value="Make">Make.com</option>
-                    <option value="Google">Google Cloud</option>
-                    <option value="OpenAI">OpenAI Workspace</option>
-                    <option value="AWS">AWS</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Asset Status</label>
-                  <select
-                    className="input-minimal"
-                    value={editStatus}
-                    onChange={(e) => setEditStatus(e.target.value as any)}
-                  >
-                    <option value="Active">Active</option>
-                    <option value="Testing">Testing</option>
-                    <option value="Deprecated">Deprecated</option>
-                  </select>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Linked Client Account*</label>
-                <select
-                  className="input-minimal"
-                  value={editAccountId}
-                  onChange={(e) => setEditAccountId(e.target.value)}
-                  required
-                >
-                  <option value="">-- Select Client --</option>
-                  {accounts.map(acc => (
-                    <option key={acc.id} value={acc.id}>{acc.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Credentials & Configuration details*</label>
-                <textarea
-                  className="input-minimal"
-                  rows={4}
-                  value={editDetails}
-                  onChange={(e) => setEditDetails(e.target.value)}
-                  required
-                  style={{ fontFamily: 'var(--font-dotdigital)', fontSize: '13px', resize: 'vertical' }}
-                />
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Internal Usage Notes</label>
-                <textarea
-                  className="input-minimal"
-                  rows={2}
-                  value={editNotes}
-                  onChange={(e) => setEditNotes(e.target.value)}
-                  style={{ resize: 'vertical' }}
-                />
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '8px' }}>
-                <button 
-                  type="button" 
-                  className="btn-secondary-outline" 
-                  onClick={() => setSelectedAsset(null)}
-                  disabled={updating}
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="submit" 
-                  className="btn-solid-primary" 
-                  disabled={updating}
-                  style={{ borderRadius: 'var(--radius-md)', padding: '8px 20px', fontSize: 'var(--text-body)' }}
-                >
-                  {updating ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
             </form>

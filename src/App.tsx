@@ -4,6 +4,7 @@ import { Dashboard } from './components/Dashboard';
 import { AccountsTab } from './components/AccountsTab';
 import { ContactsTab } from './components/ContactsTab';
 import { ProjectsTab } from './components/ProjectsTab';
+
 import { AssetsTab } from './components/AssetsTab';
 import { VendorsTab } from './components/VendorsTab';
 import { ReportsTab } from './components/ReportsTab';
@@ -27,6 +28,7 @@ export default function App() {
   const [user, setUser] = useState<any>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
   const [activeTab, setActiveTab] = useState<string>('dashboard');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // CRM Data States
@@ -43,6 +45,39 @@ export default function App() {
       setLoadingAuth(false);
     });
     return () => unsubscribe();
+  }, []);
+
+  // Custom Routing logic
+  const navigate = (tab: string, id?: string) => {
+    const path = id ? `/${tab}/${id}` : `/${tab === 'dashboard' ? '' : tab}`;
+    window.history.pushState(null, '', path);
+    setActiveTab(tab);
+    setSelectedId(id || null);
+  };
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const path = window.location.pathname;
+      const parts = path.split('/').filter(Boolean);
+      if (parts.length === 0) {
+        setActiveTab('dashboard');
+        setSelectedId(null);
+      } else if (parts.length === 1) {
+        // Fallback checks for routes
+        const tab = parts[0];
+        setActiveTab(tab);
+        setSelectedId(null);
+      } else if (parts.length === 2) {
+        const tab = parts[0];
+        const id = parts[1];
+        setActiveTab(tab);
+        setSelectedId(id);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    handlePopState();
+    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   // Fetch CRM data when logged in
@@ -126,7 +161,7 @@ export default function App() {
 
   const handleSignOut = async () => {
     await authService.signOut();
-    setActiveTab('dashboard');
+    navigate('dashboard');
   };
 
   if (loadingAuth) {
@@ -171,7 +206,7 @@ export default function App() {
             projects={projects} 
             assets={assets} 
             vendors={vendors}
-            setActiveTab={setActiveTab}
+            setActiveTab={(tab) => navigate(tab)}
           />
         );
       case 'accounts':
@@ -183,6 +218,8 @@ export default function App() {
             assets={assets}
             onAddAccount={handleAddAccount} 
             onUpdateAccount={handleUpdateAccount}
+            selectedAccountId={selectedId}
+            onNavigate={navigate}
           />
         );
       case 'contacts':
@@ -192,6 +229,8 @@ export default function App() {
             accounts={accounts} 
             onAddContact={handleAddContact} 
             onUpdateContact={handleUpdateContact}
+            selectedContactId={selectedId}
+            onNavigate={navigate}
           />
         );
       case 'projects':
@@ -202,6 +241,8 @@ export default function App() {
             contacts={contacts} 
             onAddProject={handleAddProject} 
             onUpdateProject={handleUpdateProject}
+            selectedProjectId={selectedId}
+            onNavigate={navigate}
           />
         );
       case 'assets':
@@ -211,6 +252,8 @@ export default function App() {
             accounts={accounts} 
             onAddAsset={handleAddAsset} 
             onUpdateAsset={handleUpdateAsset}
+            selectedAssetId={selectedId}
+            onNavigate={navigate}
           />
         );
       case 'vendors':
@@ -219,6 +262,8 @@ export default function App() {
             vendors={vendors} 
             onAddVendor={handleAddVendor} 
             onUpdateVendor={handleUpdateVendor}
+            selectedVendorId={selectedId}
+            onNavigate={navigate}
           />
         );
       case 'reports':
@@ -244,7 +289,7 @@ export default function App() {
         backdropFilter: 'blur(20px)'
       }}>
         {/* Brand/Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={() => setActiveTab('dashboard')}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={() => navigate('dashboard')}>
           <img 
             src="/logo.png" 
             alt="Workflow Zero Logo" 
@@ -269,7 +314,7 @@ export default function App() {
               <button
                 key={item.id}
                 onClick={() => {
-                  setActiveTab(item.id);
+                  navigate(item.id);
                   setMobileMenuOpen(false);
                 }}
                 className="btn-secondary-outline"
@@ -354,7 +399,7 @@ export default function App() {
               <button
                 key={item.id}
                 onClick={() => {
-                  setActiveTab(item.id);
+                  navigate(item.id);
                   setMobileMenuOpen(false);
                 }}
                 className="btn-secondary-outline"

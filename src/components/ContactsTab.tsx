@@ -1,19 +1,23 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Contact, Account } from '../types';
-import { Plus, Search, Filter, Mail, Phone, Briefcase, Building, Edit3, X } from 'lucide-react';
+import { Plus, Search, Filter, Mail, Phone, Briefcase, Building, Edit3, X, Home, ChevronRight, ArrowLeft } from 'lucide-react';
 
 interface ContactsTabProps {
   contacts: Contact[];
   accounts: Account[];
   onAddContact: (contact: Omit<Contact, 'id' | 'createdAt'>) => Promise<void>;
   onUpdateContact: (id: string, updates: Partial<Omit<Contact, 'id' | 'createdAt'>>) => Promise<void>;
+  selectedContactId?: string | null;
+  onNavigate: (tab: string, id?: string) => void;
 }
 
 export const ContactsTab: React.FC<ContactsTabProps> = ({ 
   contacts, 
   accounts, 
   onAddContact,
-  onUpdateContact
+  onUpdateContact,
+  selectedContactId,
+  onNavigate
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [accountFilter, setAccountFilter] = useState<string>('ALL');
@@ -55,14 +59,28 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
     });
   }, [contacts, searchTerm, accountFilter]);
 
+  // Sync selectedContactId from URL
+  useEffect(() => {
+    if (selectedContactId) {
+      const contact = contacts.find(c => c.id === selectedContactId);
+      if (contact) {
+        setSelectedContact(contact);
+        setEditFirstName(contact.firstName);
+        setEditLastName(contact.lastName);
+        setEditEmail(contact.email);
+        setEditPhone(contact.phone);
+        setEditJobTitle(contact.jobTitle);
+        setEditAccountId(contact.accountId);
+      } else {
+        setSelectedContact(null);
+      }
+    } else {
+      setSelectedContact(null);
+    }
+  }, [selectedContactId, contacts]);
+
   const handleSelectContact = (contact: Contact) => {
-    setSelectedContact(contact);
-    setEditFirstName(contact.firstName);
-    setEditLastName(contact.lastName);
-    setEditEmail(contact.email);
-    setEditPhone(contact.phone);
-    setEditJobTitle(contact.jobTitle);
-    setEditAccountId(contact.accountId);
+    onNavigate('contacts', contact.id);
   };
 
   const handleAddSubmit = async (e: React.FormEvent) => {
@@ -106,13 +124,174 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
         jobTitle: editJobTitle,
         accountId: editAccountId
       });
-      setSelectedContact(null);
+      onNavigate('contacts');
     } catch (err) {
       console.error(err);
     } finally {
       setUpdating(false);
     }
   };
+
+  if (selectedContactId) {
+    if (!selectedContact) {
+      return (
+        <div style={{ padding: '40px', textAlign: 'center' }}>
+          <h3 style={{ color: 'var(--color-ghost-white)' }}>Contact Record not found</h3>
+          <button className="btn-secondary-outline" onClick={() => onNavigate('contacts')} style={{ marginTop: '16px' }}>
+            <ArrowLeft size={16} style={{ marginRight: '8px' }} /> Back to Contacts Directory
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        {/* Breadcrumb Navigation */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          fontSize: 'var(--text-caption)',
+          color: 'var(--color-graphite)',
+          paddingBottom: '8px'
+        }}>
+          <span 
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }} 
+            onClick={() => onNavigate('dashboard')}
+          >
+            <Home size={14} />
+          </span>
+          <ChevronRight size={12} />
+          <span 
+            style={{ cursor: 'pointer' }} 
+            onClick={() => onNavigate('contacts')}
+          >
+            contacts
+          </span>
+          <ChevronRight size={12} />
+          <span style={{ color: 'var(--color-ink)', fontWeight: 500 }}>
+            {selectedContact.id}
+          </span>
+        </div>
+
+        {/* Details page container */}
+        <div className="login-card" style={{
+          width: '100%',
+          maxWidth: '560px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '20px',
+          position: 'relative'
+        }}>
+          {/* Back button */}
+          <button 
+            onClick={() => onNavigate('contacts')}
+            className="btn-icon"
+            style={{
+              position: 'absolute',
+              top: '20px',
+              right: '20px',
+              zIndex: 10
+            }}
+            title="Back to List"
+          >
+            <ArrowLeft size={16} />
+          </button>
+
+          <h3 style={{ fontSize: 'var(--text-heading)', fontFamily: 'var(--font-aeonikpro)', color: 'var(--color-ghost-white)' }}>Edit Contact Record</h3>
+          
+          <form onSubmit={handleEditSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>First Name*</label>
+                <input
+                  type="text"
+                  className="input-minimal"
+                  value={editFirstName}
+                  onChange={(e) => setEditFirstName(e.target.value)}
+                  required
+                />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Last Name*</label>
+                <input
+                  type="text"
+                  className="input-minimal"
+                  value={editLastName}
+                  onChange={(e) => setEditLastName(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Linked Account*</label>
+              <select
+                className="input-minimal"
+                value={editAccountId}
+                onChange={(e) => setEditAccountId(e.target.value)}
+                required
+              >
+                <option value="">-- Select Client --</option>
+                {accounts.map(acc => (
+                  <option key={acc.id} value={acc.id}>{acc.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Job Title</label>
+              <input
+                type="text"
+                className="input-minimal"
+                value={editJobTitle}
+                onChange={(e) => setEditJobTitle(e.target.value)}
+              />
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Email Address</label>
+              <input
+                type="email"
+                className="input-minimal"
+                value={editEmail}
+                onChange={(e) => setEditEmail(e.target.value)}
+              />
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Phone Number</label>
+              <input
+                type="text"
+                className="input-minimal"
+                value={editPhone}
+                onChange={(e) => setEditPhone(e.target.value)}
+              />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '12px' }}>
+              <button 
+                type="button" 
+                className="btn-secondary-outline" 
+                onClick={() => onNavigate('contacts')}
+                disabled={updating}
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                className="btn-solid-primary" 
+                disabled={updating}
+                style={{ borderRadius: 'var(--radius-md)', padding: '8px 20px', fontSize: 'var(--text-body)' }}
+              >
+                {updating ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -384,129 +563,6 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
                   style={{ borderRadius: 'var(--radius-md)', padding: '8px 20px', fontSize: 'var(--text-body)' }}
                 >
                   {submitting ? 'Adding...' : 'Add Contact'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Contact Modal */}
-      {selectedContact && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          background: 'rgba(29, 29, 31, 0.22)',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 100,
-          backdropFilter: 'blur(4px)'
-        }}>
-          <div className="login-card" style={{
-            width: '100%',
-            maxWidth: '480px',
-            maxHeight: '90vh',
-            overflowY: 'auto',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '20px'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 style={{ fontSize: 'var(--text-heading)', fontFamily: 'var(--font-aeonikpro)' }}>Edit Contact Record</h3>
-              <button onClick={() => setSelectedContact(null)} className="btn-icon" style={{ width: '30px', height: '30px' }}>
-                <X size={14} />
-              </button>
-            </div>
-            
-            <form onSubmit={handleEditSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>First Name*</label>
-                  <input
-                    type="text"
-                    className="input-minimal"
-                    value={editFirstName}
-                    onChange={(e) => setEditFirstName(e.target.value)}
-                    required
-                  />
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Last Name*</label>
-                  <input
-                    type="text"
-                    className="input-minimal"
-                    value={editLastName}
-                    onChange={(e) => setEditLastName(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Linked Account*</label>
-                <select
-                  className="input-minimal"
-                  value={editAccountId}
-                  onChange={(e) => setEditAccountId(e.target.value)}
-                  required
-                >
-                  <option value="">-- Select Client --</option>
-                  {accounts.map(acc => (
-                    <option key={acc.id} value={acc.id}>{acc.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Job Title</label>
-                <input
-                  type="text"
-                  className="input-minimal"
-                  value={editJobTitle}
-                  onChange={(e) => setEditJobTitle(e.target.value)}
-                />
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Email Address</label>
-                <input
-                  type="email"
-                  className="input-minimal"
-                  value={editEmail}
-                  onChange={(e) => setEditEmail(e.target.value)}
-                />
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Phone Number</label>
-                <input
-                  type="text"
-                  className="input-minimal"
-                  value={editPhone}
-                  onChange={(e) => setEditPhone(e.target.value)}
-                />
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '12px' }}>
-                <button 
-                  type="button" 
-                  className="btn-secondary-outline" 
-                  onClick={() => setSelectedContact(null)}
-                  disabled={updating}
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="submit" 
-                  className="btn-solid-primary" 
-                  disabled={updating}
-                  style={{ borderRadius: 'var(--radius-md)', padding: '8px 20px', fontSize: 'var(--text-body)' }}
-                >
-                  {updating ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
             </form>

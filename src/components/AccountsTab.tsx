@@ -1,6 +1,6 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Account, Contact, Project, Asset } from '../types';
-import { Plus, Search, Filter, Globe, Phone, Mail, MapPin, Edit3, X, FileText, Upload, Trash2, Paperclip, Briefcase, FolderGit, HardDrive, Users, AlertCircle } from 'lucide-react';
+import { Plus, Search, Filter, Globe, Phone, Mail, MapPin, Edit3, X, FileText, Upload, Trash2, Paperclip, Briefcase, FolderGit, HardDrive, Users, AlertCircle, Home, ChevronRight, ArrowLeft } from 'lucide-react';
 
 interface AccountsTabProps {
   accounts: Account[];
@@ -9,6 +9,8 @@ interface AccountsTabProps {
   assets: Asset[];
   onAddAccount: (account: Omit<Account, 'id' | 'createdAt'>) => Promise<void>;
   onUpdateAccount: (id: string, updates: Partial<Omit<Account, 'id' | 'createdAt'>>) => Promise<void>;
+  selectedAccountId?: string | null;
+  onNavigate: (tab: string, id?: string) => void;
 }
 
 export const AccountsTab: React.FC<AccountsTabProps> = ({ 
@@ -17,7 +19,9 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({
   projects,
   assets,
   onAddAccount,
-  onUpdateAccount
+  onUpdateAccount,
+  selectedAccountId,
+  onNavigate
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
@@ -96,21 +100,35 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({
     return assets.filter(a => a.accountId === selectedAccount.id);
   }, [selectedAccount, assets]);
 
-  // Open Details Modal and fill edit state
+  // Sync URL selected account ID with local states
+  useEffect(() => {
+    if (selectedAccountId) {
+      const account = accounts.find(a => a.id === selectedAccountId);
+      if (account) {
+        setSelectedAccount(account);
+        setEditName(account.name);
+        setEditStatus(account.status);
+        setEditIndustry(account.industry);
+        setEditWebsite(account.website);
+        setEditPhone(account.phone);
+        setEditEmail(account.email);
+        setEditStreet(account.street);
+        setEditCity(account.city);
+        setEditState(account.state);
+        setEditPostalCode(account.postalCode);
+        setEditError(null);
+      } else {
+        setSelectedAccount(null);
+      }
+    } else {
+      setSelectedAccount(null);
+      setEditMode(false);
+    }
+  }, [selectedAccountId, accounts]);
+
+  // Open Details Page by navigating
   const handleSelectAccount = (account: Account) => {
-    setSelectedAccount(account);
-    setEditName(account.name);
-    setEditStatus(account.status);
-    setEditIndustry(account.industry);
-    setEditWebsite(account.website);
-    setEditPhone(account.phone);
-    setEditEmail(account.email);
-    setEditStreet(account.street);
-    setEditCity(account.city);
-    setEditState(account.state);
-    setEditPostalCode(account.postalCode);
-    setEditMode(false);
-    setEditError(null);
+    onNavigate('accounts', account.id);
   };
 
   const handleAddSubmit = async (e: React.FormEvent) => {
@@ -234,6 +252,472 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({
       console.error("Error removing document", err);
     }
   };
+
+  if (selectedAccountId) {
+    if (!selectedAccount) {
+      return (
+        <div style={{ padding: '40px', textAlign: 'center' }}>
+          <h3 style={{ color: 'var(--color-ghost-white)' }}>Client Account not found</h3>
+          <button className="btn-secondary-outline" onClick={() => onNavigate('accounts')} style={{ marginTop: '16px' }}>
+            <ArrowLeft size={16} style={{ marginRight: '8px' }} /> Back to Client Directory
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        {/* Breadcrumb Navigation */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          fontSize: 'var(--text-caption)',
+          color: 'var(--color-graphite)',
+          paddingBottom: '8px'
+        }}>
+          <span 
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }} 
+            onClick={() => onNavigate('dashboard')}
+          >
+            <Home size={14} />
+          </span>
+          <ChevronRight size={12} />
+          <span 
+            style={{ cursor: 'pointer' }} 
+            onClick={() => onNavigate('accounts')}
+          >
+            accounts
+          </span>
+          <ChevronRight size={12} />
+          <span style={{ color: 'var(--color-ink)', fontWeight: 500 }}>
+            {selectedAccount.id}
+          </span>
+        </div>
+
+        {/* Details page container */}
+        <div className="login-card" style={{
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '24px',
+          position: 'relative'
+        }}>
+          {/* Back button */}
+          <button 
+            onClick={() => onNavigate('accounts')}
+            className="btn-icon"
+            style={{
+              position: 'absolute',
+              top: '20px',
+              right: '20px',
+              zIndex: 10
+            }}
+            title="Back to List"
+          >
+            <ArrowLeft size={16} />
+          </button>
+
+          {/* Header info */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingRight: '40px' }}>
+            <div>
+              <span className="status-badge" style={{ textTransform: 'uppercase', fontSize: '10px', marginBottom: '8px' }}>
+                Client Console / Details
+              </span>
+              <h3 style={{ fontSize: 'var(--text-heading-lg)', color: 'var(--color-ghost-white)', fontFamily: 'var(--font-aeonikpro)' }}>
+                {selectedAccount.name}
+              </h3>
+            </div>
+            <button 
+              className="btn-primary-pill" 
+              onClick={() => setEditMode(!editMode)}
+              style={{ fontSize: 'var(--text-caption)', padding: '6px 14px' }}
+            >
+              <Edit3 size={12} />
+              <span>{editMode ? 'Cancel Edit' : 'Edit Info'}</span>
+            </button>
+          </div>
+
+          {editMode ? (
+            /* EDITOR FORM */
+            <form onSubmit={handleEditSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {editError && (
+                <div style={{
+                  display: 'flex',
+                  gap: '10px',
+                  background: 'rgba(239, 68, 68, 0.1)',
+                  border: '1px solid rgba(239, 68, 68, 0.2)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '12px',
+                  color: 'var(--color-caution)',
+                  fontSize: 'var(--text-body)',
+                  alignItems: 'flex-start'
+                }}>
+                  <AlertCircle size={18} style={{ flexShrink: 0, marginTop: '2px' }} />
+                  <span>{editError}</span>
+                </div>
+              )}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Account Name*</label>
+                  <input
+                    type="text"
+                    className="input-minimal"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Status</label>
+                  <select
+                    className="input-minimal"
+                    value={editStatus}
+                    onChange={(e) => setEditStatus(e.target.value as any)}
+                  >
+                    <option value="Active">Active</option>
+                    <option value="Lead">Lead</option>
+                    <option value="Inactive">Inactive</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Industry</label>
+                  <input
+                    type="text"
+                    className="input-minimal"
+                    value={editIndustry}
+                    onChange={(e) => setEditIndustry(e.target.value)}
+                  />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Website</label>
+                  <input
+                    type="url"
+                    className="input-minimal"
+                    value={editWebsite}
+                    onChange={(e) => setEditWebsite(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Phone</label>
+                  <input
+                    type="text"
+                    className="input-minimal"
+                    value={editPhone}
+                    onChange={(e) => setEditPhone(e.target.value)}
+                  />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Email</label>
+                  <input
+                    type="email"
+                    className="input-minimal"
+                    value={editEmail}
+                    onChange={(e) => setEditEmail(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Street Address</label>
+                <input
+                  type="text"
+                  className="input-minimal"
+                  value={editStreet}
+                  onChange={(e) => setEditStreet(e.target.value)}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '12px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>City</label>
+                  <input
+                    type="text"
+                    className="input-minimal"
+                    value={editCity}
+                    onChange={(e) => setEditCity(e.target.value)}
+                  />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>State</label>
+                  <input
+                    type="text"
+                    className="input-minimal"
+                    value={editState}
+                    onChange={(e) => setEditState(e.target.value)}
+                  />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: 'var(--text-caption)', color: 'var(--color-arctic-mist)' }}>Postal Code</label>
+                  <input
+                    type="text"
+                    className="input-minimal"
+                    value={editPostalCode}
+                    onChange={(e) => setEditPostalCode(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '12px' }}>
+                <button 
+                  type="button" 
+                  className="btn-secondary-outline" 
+                  onClick={() => setEditMode(false)}
+                  disabled={updating}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="btn-solid-primary" 
+                  disabled={updating}
+                  style={{ borderRadius: 'var(--radius-md)', padding: '8px 20px', fontSize: 'var(--text-body)' }}
+                >
+                  {updating ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          ) : (
+            /* DETAILS VIEW */
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              {/* Meta details grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px' }}>
+                <div className="glassy-card" style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '16px' }}>
+                  <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-whisper-blue)' }}>Status & Industry</span>
+                  <div>
+                    <span className={`status-badge ${selectedAccount.status.toLowerCase()}`} style={{ marginRight: '8px' }}>
+                      {selectedAccount.status}
+                    </span>
+                    <span style={{ fontSize: 'var(--text-body)', color: 'var(--color-ghost-white)' }}>
+                      {selectedAccount.industry || 'No Industry'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="glassy-card" style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '16px' }}>
+                  <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-whisper-blue)' }}>Contact Info</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: 'var(--text-caption)' }}>
+                    {selectedAccount.phone && <span><strong>Phone:</strong> {selectedAccount.phone}</span>}
+                    {selectedAccount.email && <span><strong>Email:</strong> {selectedAccount.email}</span>}
+                    {selectedAccount.website && (
+                      <a href={selectedAccount.website} target="_blank" rel="noreferrer" style={{ color: 'var(--color-celestial-light)', textDecoration: 'underline' }}>
+                        {selectedAccount.website}
+                      </a>
+                    )}
+                  </div>
+                </div>
+
+                <div className="glassy-card" style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '16px' }}>
+                  <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-whisper-blue)' }}>Office Address</span>
+                  <div style={{ fontSize: 'var(--text-caption)' }}>
+                    {selectedAccount.street ? (
+                      <>
+                        {selectedAccount.street}<br />
+                        {selectedAccount.city}, {selectedAccount.state} {selectedAccount.postalCode}
+                      </>
+                    ) : 'No address on file.'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Subsections Grid: Contacts, Projects, Assets */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '24px' }}>
+                {/* Left: Contacts and Systems */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  {/* Contacts */}
+                  <div className="glassy-card" style={{ padding: '20px' }}>
+                    <h4 style={{ fontSize: 'var(--text-body-lg)', color: 'var(--color-ghost-white)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Users size={16} style={{ color: 'var(--color-celestial-light)' }} />
+                      <span>Associated Contacts ({accountContacts.length})</span>
+                    </h4>
+                    {accountContacts.length > 0 ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        {accountContacts.map(c => (
+                          <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-caption)', borderBottom: '1px solid var(--color-silver-mist)', paddingBottom: '6px' }}>
+                            <div>
+                              <span style={{ color: 'var(--color-ghost-white)', fontWeight: 500 }}>{c.firstName} {c.lastName}</span>
+                              <span style={{ color: 'var(--color-whisper-blue)', marginLeft: '6px' }}>- {c.jobTitle}</span>
+                            </div>
+                            <div style={{ display: 'flex', gap: '10px', color: 'var(--color-whisper-blue)' }}>
+                              {c.email && <span>{c.email}</span>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-whisper-blue)' }}>No contacts linked to this account.</span>
+                    )}
+                  </div>
+
+                  {/* Systems / Assets */}
+                  <div className="glassy-card" style={{ padding: '20px' }}>
+                    <h4 style={{ fontSize: 'var(--text-body-lg)', color: 'var(--color-ghost-white)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <HardDrive size={16} style={{ color: 'var(--color-arctic-mist)' }} />
+                      <span>Account Assets & Systems ({accountAssets.length})</span>
+                    </h4>
+                    {accountAssets.length > 0 ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {accountAssets.map(a => (
+                          <div key={a.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 'var(--text-caption)' }}>
+                            <div>
+                              <span style={{ color: 'var(--color-ghost-white)', fontWeight: 500 }}>{a.name}</span>
+                              <span className="status-badge" style={{ fontSize: '8px', padding: '1px 4px', marginLeft: '6px' }}>{a.serviceProvider}</span>
+                            </div>
+                            <span style={{ color: a.status === 'Active' ? '#248a3d' : 'var(--color-graphite)' }}>{a.status}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-whisper-blue)' }}>No systems associated.</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Right: Projects and Supporting Documentation */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  {/* Projects */}
+                  <div className="glassy-card" style={{ padding: '20px' }}>
+                    <h4 style={{ fontSize: 'var(--text-body-lg)', color: 'var(--color-ghost-white)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <FolderGit size={16} style={{ color: 'var(--color-neon-violet)' }} />
+                      <span>Ongoing Projects ({accountProjects.length})</span>
+                    </h4>
+                    {accountProjects.length > 0 ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        {accountProjects.map(p => (
+                          <div key={p.id} style={{ display: 'flex', flexDirection: 'column', gap: '4px', borderBottom: '1px solid var(--color-silver-mist)', paddingBottom: '8px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-caption)' }}>
+                              <span style={{ color: 'var(--color-ghost-white)', fontWeight: 500 }}>{p.name}</span>
+                              <span className={`status-badge ${p.status.toLowerCase().replace(' ', '-')}`} style={{ fontSize: '9px', padding: '2px 4px' }}>
+                                {p.status}
+                              </span>
+                            </div>
+                            {/* Progress mini bar */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
+                              <div style={{ flexGrow: 1, height: '4px', background: 'var(--color-silver-mist)', borderRadius: '2px', overflow: 'hidden' }}>
+                                <div style={{ width: `${p.percentageComplete}%`, height: '100%', background: 'var(--color-neon-violet)' }} />
+                              </div>
+                              <span style={{ fontFamily: 'var(--font-dotdigital)', fontSize: '10px' }}>{p.percentageComplete}%</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-whisper-blue)' }}>No projects in portfolio.</span>
+                    )}
+                  </div>
+
+                  {/* Supporting Documentation / Document Attachment Manager */}
+                  <div className="glassy-card" style={{ padding: '20px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                      <h4 style={{ fontSize: 'var(--text-body-lg)', color: 'var(--color-ghost-white)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Paperclip size={16} style={{ color: 'var(--color-celestial-light)' }} />
+                        <span>Supporting Documentation</span>
+                      </h4>
+                      
+                      {/* Hidden File Input */}
+                      <input 
+                        type="file" 
+                        ref={fileInputRef} 
+                        style={{ display: 'none' }} 
+                        onChange={handleFileUpload}
+                      />
+                      <button 
+                        className="btn-primary-pill" 
+                        onClick={handleTriggerUpload}
+                        style={{ fontSize: '11px', padding: '4px 10px' }}
+                      >
+                        <Upload size={11} />
+                        <span>Attach File</span>
+                      </button>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {selectedAccount.documents && selectedAccount.documents.length > 0 ? (
+                        selectedAccount.documents.map(doc => (
+                          <div 
+                            key={doc.id}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              background: 'var(--color-fog)',
+                              padding: '8px 12px',
+                              borderRadius: 'var(--radius-md)',
+                              border: '1px solid var(--color-silver-mist)'
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <FileText size={16} style={{ color: 'var(--color-whisper-blue)' }} />
+                              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <span style={{ 
+                                  fontSize: 'var(--text-caption)', 
+                                  color: 'var(--color-ghost-white)', 
+                                  fontWeight: 500,
+                                  wordBreak: 'break-all',
+                                  paddingRight: '12px'
+                                }}>
+                                  {doc.name}
+                                </span>
+                                <span style={{ fontSize: '9px', color: 'var(--color-whisper-blue)' }}>
+                                  Size: {doc.size} &bull; Uploaded: {doc.uploadedAt}
+                                </span>
+                              </div>
+                            </div>
+
+                            <button 
+                              onClick={() => handleDeleteDocument(doc.id)}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: 'var(--color-caution)',
+                                cursor: 'pointer',
+                                padding: '4px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                borderRadius: '4px',
+                                transition: 'background-color 0.2s'
+                              }}
+                              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(248, 113, 113, 0.1)')}
+                              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                              title="Remove document"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                        ))
+                      ) : (
+                        <div style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: '8px',
+                          padding: '20px 0',
+                          border: '1px dashed var(--color-silver-mist)',
+                          borderRadius: 'var(--radius-md)',
+                          color: 'var(--color-whisper-blue)',
+                          fontSize: 'var(--text-caption)'
+                        }}>
+                          <FileText size={24} style={{ color: 'var(--color-silver-mist)' }} />
+                          <span>No documentation uploaded for this client yet.</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
