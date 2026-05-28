@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Account, Contact, Project, Asset } from '../types';
+import { Account, Contact, Project, Asset, Activity } from '../types';
 import { Printer, FileText, CheckCircle, Clock } from 'lucide-react';
 
 interface ReportsTabProps {
@@ -7,13 +7,15 @@ interface ReportsTabProps {
   contacts: Contact[];
   projects: Project[];
   assets: Asset[];
+  activities: Activity[];
 }
 
 export const ReportsTab: React.FC<ReportsTabProps> = ({
   accounts,
   contacts,
   projects,
-  assets
+  assets,
+  activities
 }) => {
   const [selectedAccountId, setSelectedAccountId] = useState<string>('');
 
@@ -37,6 +39,15 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
       ? Math.round(accountProjects.reduce((sum, p) => sum + p.percentageComplete, 0) / totalProjects)
       : 0;
 
+    const accountActivities = activities
+      .filter((a: Activity) => a.accountId === selectedAccountId)
+      .sort((a: Activity, b: Activity) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+    const totalActivities = accountActivities.length;
+    const callCount = accountActivities.filter((a: Activity) => a.type === 'call').length;
+    const emailCount = accountActivities.filter((a: Activity) => a.type === 'email').length;
+    const textCount = accountActivities.filter((a: Activity) => a.type === 'text').length;
+
     return {
       projects: accountProjects,
       contacts: accountContacts,
@@ -44,9 +55,14 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
       completedProjects,
       ongoingProjects,
       avgCompletion,
-      totalProjects
+      totalProjects,
+      activities: accountActivities,
+      totalActivities,
+      callCount,
+      emailCount,
+      textCount
     };
-  }, [selectedAccountId, projects, contacts, assets]);
+  }, [selectedAccountId, projects, contacts, assets, activities]);
 
   const handlePrint = () => {
     window.print();
@@ -172,6 +188,15 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
                 <div style={{ fontSize: 'var(--text-caption)', color: 'var(--color-whisper-blue)' }}>Avg Progress Rate</div>
                 <div style={{ fontSize: '24px', fontWeight: 600, fontFamily: 'var(--font-dotdigital)', color: 'var(--color-celestial-light)', marginTop: '4px' }}>
                   {accountReportData.avgCompletion}%
+                </div>
+              </div>
+              <div style={{ background: 'var(--color-fog)', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-silver-mist)' }}>
+                <div style={{ fontSize: 'var(--text-caption)', color: 'var(--color-whisper-blue)' }}>Total Interactions</div>
+                <div style={{ fontSize: '24px', fontWeight: 600, fontFamily: 'var(--font-dotdigital)', color: 'var(--color-ghost-white)', marginTop: '4px' }}>
+                  {accountReportData.totalActivities}
+                </div>
+                <div style={{ fontSize: '9px', color: 'var(--color-whisper-blue)', marginTop: '4px' }}>
+                  {accountReportData.emailCount} E &bull; {accountReportData.callCount} C &bull; {accountReportData.textCount} T
                 </div>
               </div>
             </div>
@@ -350,6 +375,61 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
                 </div>
               ) : (
                 <p style={{ fontSize: 'var(--text-body)', color: 'var(--color-whisper-blue)' }}>No active systems mapped to this account.</p>
+              )}
+            </div>
+
+            {/* Interaction History Log */}
+            <div>
+              <h3 style={{ fontSize: 'var(--text-subheading)', color: 'var(--color-ghost-white)', borderBottom: '1px solid var(--color-silver-mist)', paddingBottom: '8px', marginBottom: '16px' }}>
+                Recent Interaction History ({accountReportData.totalActivities})
+              </h3>
+              {accountReportData.activities && accountReportData.activities.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {accountReportData.activities.map((activity: Activity) => {
+                    const dateStr = new Date(activity.timestamp).toLocaleDateString([], {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    });
+                    const linkedContact = contacts.find(c => c.id === activity.contactId);
+
+                    return (
+                      <div key={activity.id} style={{
+                        background: 'var(--color-fog)',
+                        border: '1px solid var(--color-silver-mist)',
+                        borderRadius: 'var(--radius-md)',
+                        padding: '12px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '6px'
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ color: 'var(--color-ghost-white)', fontWeight: 500, fontSize: 'var(--text-body)' }}>
+                            <span style={{ textTransform: 'uppercase', marginRight: '8px', fontSize: '10px', color: 'var(--color-celestial-light)' }}>
+                              [{activity.type}] ({activity.direction})
+                            </span>
+                            {activity.subject}
+                          </span>
+                          <span style={{ fontSize: '11px', color: 'var(--color-whisper-blue)' }}>
+                            {dateStr}
+                          </span>
+                        </div>
+                        {linkedContact && (
+                          <div style={{ fontSize: '11px', color: 'var(--color-whisper-blue)' }}>
+                            Contact: {linkedContact.firstName} {linkedContact.lastName} ({linkedContact.jobTitle})
+                          </div>
+                        )}
+                        <p style={{ fontSize: 'var(--text-body)', color: 'var(--color-comet)', margin: 0, whiteSpace: 'pre-wrap' }}>
+                          {activity.content}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p style={{ fontSize: 'var(--text-body)', color: 'var(--color-whisper-blue)' }}>No interactions logged on this account yet.</p>
               )}
             </div>
 

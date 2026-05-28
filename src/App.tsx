@@ -10,7 +10,7 @@ import { VendorsTab } from './components/VendorsTab';
 import { ReportsTab } from './components/ReportsTab';
 import { authService } from './firebase';
 import { dbService } from './services/db';
-import { Account, Contact, Project, Asset, Vendor } from './types';
+import { Account, Contact, Project, Asset, Vendor, Activity } from './types';
 import { 
   LayoutDashboard, 
   Users, 
@@ -37,6 +37,7 @@ export default function App() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [assets, setAssets] = useState<Asset[]>([]);
   const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [activities, setActivities] = useState<Activity[]>([]);
 
   // Monitor auth state
   useEffect(() => {
@@ -80,22 +81,23 @@ export default function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // Fetch CRM data when logged in
   const fetchData = async () => {
     if (!user) return;
     try {
-      const [accs, cons, projs, asts, vends] = await Promise.all([
+      const [accs, cons, projs, asts, vends, acts] = await Promise.all([
         dbService.getAccounts(),
         dbService.getContacts(),
         dbService.getProjects(),
         dbService.getAssets(),
-        dbService.getVendors()
+        dbService.getVendors(),
+        dbService.getActivities()
       ]);
       setAccounts(accs);
       setContacts(cons);
       setProjects(projs);
       setAssets(asts);
       setVendors(vends);
+      setActivities(acts);
     } catch (e) {
       console.error("Error loading CRM data", e);
     }
@@ -131,6 +133,11 @@ export default function App() {
   const handleAddVendor = async (newVend: Omit<Vendor, 'id' | 'createdAt'>) => {
     const added = await dbService.addVendor(newVend);
     setVendors(prev => [...prev, added]);
+  };
+
+  const handleAddActivity = async (newAct: Omit<Activity, 'id' | 'timestamp'>) => {
+    const added = await dbService.addActivity(newAct);
+    setActivities(prev => [...prev, added]);
   };
 
   // Handle updates of records
@@ -206,6 +213,7 @@ export default function App() {
             projects={projects} 
             assets={assets} 
             vendors={vendors}
+            activities={activities}
             setActiveTab={(tab) => navigate(tab)}
           />
         );
@@ -216,8 +224,10 @@ export default function App() {
             contacts={contacts}
             projects={projects}
             assets={assets}
+            activities={activities}
             onAddAccount={handleAddAccount} 
             onUpdateAccount={handleUpdateAccount}
+            onAddActivity={handleAddActivity}
             selectedAccountId={selectedId}
             onNavigate={navigate}
           />
@@ -227,8 +237,10 @@ export default function App() {
           <ContactsTab 
             contacts={contacts} 
             accounts={accounts} 
+            activities={activities}
             onAddContact={handleAddContact} 
             onUpdateContact={handleUpdateContact}
+            onAddActivity={handleAddActivity}
             selectedContactId={selectedId}
             onNavigate={navigate}
           />
@@ -267,7 +279,15 @@ export default function App() {
           />
         );
       case 'reports':
-        return <ReportsTab accounts={accounts} contacts={contacts} projects={projects} assets={assets} />;
+        return (
+          <ReportsTab 
+            accounts={accounts} 
+            contacts={contacts} 
+            projects={projects} 
+            assets={assets} 
+            activities={activities}
+          />
+        );
       default:
         return <div>Tab not found</div>;
     }

@@ -6,7 +6,7 @@ import {
   updateDoc, 
   doc
 } from 'firebase/firestore';
-import { Account, Contact, Project, Asset, Vendor } from '../types';
+import { Account, Contact, Project, Asset, Vendor, Activity } from '../types';
 
 // Unified Db Service
 export const dbService = {
@@ -148,5 +148,28 @@ export const dbService = {
   async updateVendor(id: string, updates: Partial<Omit<Vendor, 'id' | 'createdAt'>>): Promise<void> {
     const docRef = doc(firestore, 'vendors', id);
     await updateDoc(docRef, updates);
+  },
+
+  // Activities
+  async getActivities(): Promise<Activity[]> {
+    const querySnapshot = await getDocs(collection(firestore, 'activities'));
+    const activities: Activity[] = [];
+    querySnapshot.forEach((docSnap: any) => {
+      activities.push({ id: docSnap.id, ...docSnap.data() } as Activity);
+    });
+    return activities;
+  },
+
+  async addActivity(activity: Omit<Activity, 'id' | 'timestamp'>): Promise<Activity> {
+    const timestamp = new Date().toISOString();
+    const docRef = await addDoc(collection(firestore, 'activities'), {
+      ...activity,
+      timestamp
+    });
+    return {
+      ...activity,
+      id: docRef.id,
+      timestamp
+    };
   }
 };

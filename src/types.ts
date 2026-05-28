@@ -65,3 +65,20 @@ export interface Vendor {
   notes: string;
   createdAt: string;
 }
+
+export interface Activity {
+  id: string;
+  type: 'email' | 'call' | 'text';
+  direction: 'inbound' | 'outbound';
+  accountId: string;          // Associated account ID
+  contactId?: string;         // Associated contact ID (optional)
+  timestamp: string;          // ISO date string
+  subject: string;            // Title or brief summary
+  content: string;            // Notes, body or details
+  creatorName: string;        // Name of user who logged it
+  metadata?: {
+    duration?: number;        // Call duration in minutes
+    emailAddress?: string;    // Recipient or sender email
+    phoneNumber?: string;     // Recipient or sender phone number
+  };
+}

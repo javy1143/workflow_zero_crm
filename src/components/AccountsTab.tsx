@@ -1,14 +1,18 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Account, Contact, Project, Asset } from '../types';
+import { Account, Contact, Project, Asset, Activity } from '../types';
 import { Plus, Search, Filter, Globe, Phone, Mail, MapPin, Edit3, X, FileText, Upload, Trash2, Paperclip, Briefcase, FolderGit, HardDrive, Users, AlertCircle, Home, ChevronRight, ArrowLeft } from 'lucide-react';
+import { ActivityLogger } from './ActivityLogger';
+import { ActivityTimeline } from './ActivityTimeline';
 
 interface AccountsTabProps {
   accounts: Account[];
   contacts: Contact[];
   projects: Project[];
   assets: Asset[];
+  activities: Activity[];
   onAddAccount: (account: Omit<Account, 'id' | 'createdAt'>) => Promise<void>;
   onUpdateAccount: (id: string, updates: Partial<Omit<Account, 'id' | 'createdAt'>>) => Promise<void>;
+  onAddActivity: (activity: Omit<Activity, 'id' | 'timestamp'>) => Promise<void>;
   selectedAccountId?: string | null;
   onNavigate: (tab: string, id?: string) => void;
 }
@@ -18,8 +22,10 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({
   contacts,
   projects,
   assets,
+  activities,
   onAddAccount,
   onUpdateAccount,
+  onAddActivity,
   selectedAccountId,
   onNavigate
 }) => {
@@ -99,6 +105,13 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({
     if (!selectedAccount) return [];
     return assets.filter(a => a.accountId === selectedAccount.id);
   }, [selectedAccount, assets]);
+
+  const accountActivities = useMemo(() => {
+    if (!selectedAccount) return [];
+    return activities
+      .filter(act => act.accountId === selectedAccount.id)
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  }, [selectedAccount, activities]);
 
   // Sync URL selected account ID with local states
   useEffect(() => {
@@ -526,9 +539,24 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({
                 </div>
               </div>
 
-              {/* Subsections Grid: Contacts, Projects, Assets */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '24px' }}>
-                {/* Left: Contacts and Systems */}
+              {/* Subsections Grid: Activity Hub (Left) and Client Portfolio Stack (Right) */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '24px' }} className="details-grid-responsive">
+                {/* Left Column: Activity Hub */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <ActivityLogger 
+                    accountId={selectedAccount.id}
+                    contacts={accountContacts}
+                    defaultPhone={selectedAccount.phone}
+                    defaultEmail={selectedAccount.email}
+                    onAddActivity={onAddActivity}
+                  />
+                  <ActivityTimeline 
+                    activities={accountActivities}
+                    contacts={contacts}
+                  />
+                </div>
+
+                {/* Right Column: Client Portfolio Stack */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                   {/* Contacts */}
                   <div className="glassy-card" style={{ padding: '20px' }}>
@@ -577,10 +605,6 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({
                       <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-whisper-blue)' }}>No systems associated.</span>
                     )}
                   </div>
-                </div>
-
-                {/* Right: Projects and Supporting Documentation */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                   {/* Projects */}
                   <div className="glassy-card" style={{ padding: '20px' }}>
                     <h4 style={{ fontSize: 'var(--text-body-lg)', color: 'var(--color-ghost-white)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>

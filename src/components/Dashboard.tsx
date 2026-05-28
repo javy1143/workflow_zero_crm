@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
-import { Account, Contact, Project, Asset, Vendor } from '../types';
-import { FolderGit, Users, HardDrive, BarChart3, Clock } from 'lucide-react';
+import { Account, Contact, Project, Asset, Vendor, Activity } from '../types';
+import { FolderGit, Users, HardDrive, BarChart3, Clock, Mail, Phone, MessageSquare, Activity as ActivityIcon, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
 
 interface DashboardProps {
   accounts: Account[];
@@ -8,6 +8,7 @@ interface DashboardProps {
   projects: Project[];
   assets: Asset[];
   vendors: Vendor[];
+  activities: Activity[];
   setActiveTab: (tab: string) => void;
 }
 
@@ -17,6 +18,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   projects,
   assets,
   vendors,
+  activities,
   setActiveTab
 }) => {
   // Compute dashboard metrics
@@ -41,9 +43,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
       totalAccounts: accounts.length,
       totalContacts: contacts.length,
       totalAssets: assets.length,
-      totalVendors: vendors.length
+      totalVendors: vendors.length,
+      totalActivities: activities.length
     };
-  }, [accounts, contacts, projects, assets, vendors]);
+  }, [accounts, contacts, projects, assets, vendors, activities]);
+
+  const recentActivities = useMemo(() => {
+    return [...activities]
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      .slice(0, 5);
+  }, [activities]);
 
   // Projects sorted by target date
   const urgentProjects = useMemo(() => {
@@ -143,6 +152,19 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <div style={{ color: 'var(--color-whisper-blue)', fontSize: 'var(--text-caption)' }}>Account Assets</div>
             <div style={{ fontSize: 'var(--text-heading)', fontWeight: 600, fontFamily: 'var(--font-dotdigital)', color: 'var(--color-ghost-white)' }}>
               {stats.totalAssets}
+            </div>
+          </div>
+        </div>
+
+        {/* Interactions Stat */}
+        <div className="glassy-card" style={{ display: 'flex', alignItems: 'center', gap: '16px', cursor: 'default' }}>
+          <div style={{ background: 'var(--color-silver-mist)', padding: '12px', borderRadius: 'var(--radius-md)' }}>
+            <ActivityIcon size={24} style={{ color: 'var(--color-celestial-light)' }} />
+          </div>
+          <div>
+            <div style={{ color: 'var(--color-whisper-blue)', fontSize: 'var(--text-caption)' }}>Interactions</div>
+            <div style={{ fontSize: 'var(--text-heading)', fontWeight: 600, fontFamily: 'var(--font-dotdigital)', color: 'var(--color-ghost-white)' }}>
+              {stats.totalActivities}
             </div>
           </div>
         </div>
@@ -279,6 +301,117 @@ export const Dashboard: React.FC<DashboardProps> = ({
             ) : (
               <div style={{ color: 'var(--color-whisper-blue)', fontSize: 'var(--text-body)', textAlign: 'center', padding: '24px 0' }}>
                 All projects completed. Nice work!
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Recent Interactions Feed */}
+        <div className="glassy-card" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <ActivityIcon size={18} style={{ color: 'var(--color-celestial-light)' }} />
+            <h3 style={{ fontSize: 'var(--text-subheading)' }}>Recent Interactions</h3>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {recentActivities.length > 0 ? (
+              recentActivities.map(activity => {
+                const linkedAccount = accounts.find(a => a.id === activity.accountId);
+                const linkedContact = contacts.find(c => c.id === activity.contactId);
+                
+                const getIcon = () => {
+                  switch (activity.type) {
+                    case 'email': return <Mail size={14} style={{ color: 'var(--color-celestial-light)' }} />;
+                    case 'call': return <Phone size={14} style={{ color: 'var(--color-azure-glow)' }} />;
+                    case 'text': return <MessageSquare size={14} style={{ color: 'var(--color-neon-violet)' }} />;
+                    default: return <ActivityIcon size={14} style={{ color: 'var(--color-arctic-mist)' }} />;
+                  }
+                };
+
+                const dateStr = new Date(activity.timestamp).toLocaleDateString([], {
+                  month: 'short',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                });
+
+                return (
+                  <div key={activity.id} style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '12px',
+                    paddingBottom: '12px',
+                    borderBottom: '1px solid var(--color-silver-mist)'
+                  }}>
+                    <div style={{
+                      background: 'var(--color-silver-mist)',
+                      padding: '8px',
+                      borderRadius: 'var(--radius-md)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginTop: '2px',
+                      position: 'relative'
+                    }}>
+                      {getIcon()}
+                      <span style={{
+                        position: 'absolute',
+                        bottom: '-2px',
+                        right: '-2px',
+                        background: 'var(--color-fog)',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        border: '1px solid var(--color-silver-mist)',
+                        padding: '1px'
+                      }}>
+                        {activity.direction === 'outbound' ? (
+                          <ArrowUpRight size={8} style={{ color: '#248a3d' }} />
+                        ) : (
+                          <ArrowDownLeft size={8} style={{ color: 'var(--color-caution)' }} />
+                        )}
+                      </span>
+                    </div>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', flexGrow: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '8px' }}>
+                        <span style={{ 
+                          color: 'var(--color-ghost-white)', 
+                          fontWeight: 500, 
+                          fontSize: 'var(--text-caption)',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis'
+                        }} title={activity.subject}>
+                          {activity.subject}
+                        </span>
+                        <span style={{ fontSize: '9px', color: 'var(--color-whisper-blue)', flexShrink: 0 }}>
+                          {dateStr}
+                        </span>
+                      </div>
+                      
+                      <div style={{ fontSize: '10px', color: 'var(--color-whisper-blue)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        <span>{linkedAccount?.name || 'N/A'}</span>
+                        {linkedContact && <span> &bull; {linkedContact.firstName} {linkedContact.lastName}</span>}
+                      </div>
+
+                      <div style={{ 
+                        fontSize: 'var(--text-caption)', 
+                        color: 'var(--color-comet)', 
+                        whiteSpace: 'nowrap', 
+                        overflow: 'hidden', 
+                        textOverflow: 'ellipsis' 
+                      }}>
+                        {activity.content}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div style={{ color: 'var(--color-whisper-blue)', fontSize: 'var(--text-body)', textAlign: 'center', padding: '24px 0' }}>
+                No interactions logged yet.
               </div>
             )}
           </div>
