@@ -1,475 +1,238 @@
 import React, { useMemo } from 'react';
-import { Account, Contact, Project, Asset, Vendor, Activity } from '../types';
-import { FolderGit, Users, HardDrive, BarChart3, Clock, Mail, Phone, MessageSquare, Activity as ActivityIcon, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
+import {
+  Account,
+  Activity,
+  Asset,
+  Automation,
+  BillingContract,
+  Contact,
+  Project,
+  Report,
+  SupportTicket,
+  Task
+} from '../types';
+import {
+  AlertTriangle,
+  BadgeDollarSign,
+  Bot,
+  CheckCircle2,
+  Clock,
+  FileBarChart2,
+  FolderGit,
+  HeartPulse,
+  ListChecks,
+  Users
+} from 'lucide-react';
 
 interface DashboardProps {
   accounts: Account[];
   contacts: Contact[];
   projects: Project[];
   assets: Asset[];
-  vendors: Vendor[];
   activities: Activity[];
+  automations: Automation[];
+  tasks: Task[];
+  supportTickets: SupportTicket[];
+  reports: Report[];
+  billingContracts: BillingContract[];
   setActiveTab: (tab: string) => void;
 }
+
+const today = new Date().toISOString().slice(0, 10);
+const next30 = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+const next7 = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+const money = (value: number) => `$${value.toLocaleString()}`;
 
 export const Dashboard: React.FC<DashboardProps> = ({
   accounts,
   contacts,
   projects,
   assets,
-  vendors,
   activities,
+  automations,
+  tasks,
+  supportTickets,
+  reports,
+  billingContracts,
   setActiveTab
 }) => {
-  // Compute dashboard metrics
   const stats = useMemo(() => {
-    const totalProjects = projects.length;
-    const completedProjects = projects.filter(p => p.status === 'Completed').length;
-    const inProgressProjects = projects.filter(p => p.status === 'In Progress').length;
-    const planningProjects = projects.filter(p => p.status === 'Planning').length;
-    const onHoldProjects = projects.filter(p => p.status === 'On Hold').length;
-
-    const avgCompletion = totalProjects > 0 
-      ? Math.round(projects.reduce((acc, p) => acc + p.percentageComplete, 0) / totalProjects)
-      : 0;
+    const activeClients = accounts.filter(account => ['Active Client', 'Active'].includes(account.status)).length;
+    const mrr = billingContracts
+      .filter(contract => !['Cancelled', 'Expired'].includes(contract.contractStatus))
+      .reduce((sum, contract) => sum + (Number(contract.monthlyRecurringFee) || 0), 0);
+    const openProjects = projects.filter(project => !['Completed', 'Cancelled'].includes(project.status)).length;
+    const dueSoonProjects = projects.filter(project => project.targetDate && project.targetDate >= today && project.targetDate <= next7 && !['Completed', 'Cancelled'].includes(project.status)).length;
+    const errorAutomations = automations.filter(automation => automation.status === 'Error').length;
+    const openTickets = supportTickets.filter(ticket => !['Resolved', 'Closed'].includes(ticket.status)).length;
+    const reportsDue = reports.filter(report => ['Draft', 'Ready', 'Follow-Up Needed'].includes(report.status)).length;
+    const followUps = accounts.filter(account => account.nextFollowUpDate && account.nextFollowUpDate <= next7).length + tasks.filter(task => task.status !== 'Completed' && task.dueDate && task.dueDate <= next7).length;
+    const renewalsDue = billingContracts.filter(contract => contract.renewalDate && contract.renewalDate >= today && contract.renewalDate <= next30).length;
+    const pastDue = billingContracts.filter(contract => contract.paymentStatus === 'Past Due').length;
 
     return {
-      totalProjects,
-      completedProjects,
-      inProgressProjects,
-      planningProjects,
-      onHoldProjects,
-      avgCompletion,
-      totalAccounts: accounts.length,
-      totalContacts: contacts.length,
-      totalAssets: assets.length,
-      totalVendors: vendors.length,
-      totalActivities: activities.length
+      activeClients,
+      mrr,
+      openProjects,
+      dueSoonProjects,
+      errorAutomations,
+      openTickets,
+      reportsDue,
+      followUps,
+      renewalsDue,
+      pastDue
     };
-  }, [accounts, contacts, projects, assets, vendors, activities]);
+  }, [accounts, automations, billingContracts, projects, reports, supportTickets, tasks]);
 
-  const recentActivities = useMemo(() => {
-    return [...activities]
-      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-      .slice(0, 5);
-  }, [activities]);
+  const pipeline = useMemo(() => {
+    const stages = ['New Lead', 'Contacted', 'Discovery Scheduled', 'Proposal Sent', 'Contract Sent', 'Active Client', 'Lost'];
+    return stages.map(stage => ({
+      stage,
+      count: accounts.filter(account => account.status === stage || (stage === 'New Lead' && account.status === 'Lead')).length
+    }));
+  }, [accounts]);
 
-  // Projects sorted by target date
-  const urgentProjects = useMemo(() => {
-    return [...projects]
-      .filter(p => p.status !== 'Completed')
-      .sort((a, b) => new Date(a.targetDate).getTime() - new Date(b.targetDate).getTime())
-      .slice(0, 4);
-  }, [projects]);
+  const attentionAccounts = accounts.filter(account => account.health === 'Yellow' || account.health === 'Red').slice(0, 5);
+  const urgentTasks = tasks.filter(task => task.status !== 'Completed').sort((a, b) => (a.dueDate || '').localeCompare(b.dueDate || '')).slice(0, 5);
+  const errorAutomations = automations.filter(automation => automation.status === 'Error').slice(0, 5);
+  const upcomingBilling = billingContracts
+    .filter(contract => contract.nextInvoiceDate || contract.renewalDate || contract.paymentStatus === 'Past Due')
+    .sort((a, b) => (a.nextInvoiceDate || a.renewalDate || '').localeCompare(b.nextInvoiceDate || b.renewalDate || ''))
+    .slice(0, 5);
+
+  const metricCards = [
+    { label: 'Active Clients', value: stats.activeClients, tab: 'accounts', icon: <Users size={22} />, tone: 'var(--wz-blue)' },
+    { label: 'Monthly Recurring Revenue', value: money(stats.mrr), tab: 'billing', icon: <BadgeDollarSign size={22} />, tone: '#248a3d' },
+    { label: 'Open Projects', value: stats.openProjects, tab: 'projects', icon: <FolderGit size={22} />, tone: 'var(--wz-cyan)' },
+    { label: 'Projects Due in 7 Days', value: stats.dueSoonProjects, tab: 'projects', icon: <Clock size={22} />, tone: 'var(--wz-blue)' },
+    { label: 'Automations in Error', value: stats.errorAutomations, tab: 'automations', icon: <AlertTriangle size={22} />, tone: 'var(--color-caution)' },
+    { label: 'Open Support Tickets', value: stats.openTickets, tab: 'support', icon: <HeartPulse size={22} />, tone: 'var(--color-caution)' },
+    { label: 'Reports Due', value: stats.reportsDue, tab: 'reports', icon: <FileBarChart2 size={22} />, tone: 'var(--wz-blue)' },
+    { label: 'Follow-Ups Needed', value: stats.followUps, tab: 'tasks', icon: <ListChecks size={22} />, tone: 'var(--wz-cyan)' },
+    { label: 'Renewals in 30 Days', value: stats.renewalsDue, tab: 'billing', icon: <CheckCircle2 size={22} />, tone: '#248a3d' },
+    { label: 'Past-Due Billing', value: stats.pastDue, tab: 'billing', icon: <BadgeDollarSign size={22} />, tone: 'var(--color-caution)' }
+  ];
+
+  const accountName = (id: string) => accounts.find(account => account.id === id)?.name || 'Unknown account';
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-      {/* Welcome Hero */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingBottom: '24px',
-        borderBottom: '1px solid var(--color-silver-mist)'
-      }}>
+    <div className="dashboard-shell">
+      <section className="dashboard-hero">
         <div>
-          <h2 style={{
-            fontSize: 'var(--text-heading-lg)',
-            lineHeight: 'var(--leading-heading-lg)',
-            letterSpacing: 'var(--tracking-heading-lg)',
-            fontFamily: 'var(--font-aeonikpro)'
-          }}>
-            Workspace Overview
-          </h2>
-          <p style={{ color: 'var(--color-graphite)', fontSize: 'var(--text-body)', marginTop: '8px', maxWidth: '620px' }}>
-            A clean view of clients, contacts, assets, and active project momentum.
-          </p>
+          <span className="eyebrow">Workflow Zero IT CRM</span>
+          <h1>Operating view</h1>
+          <p>Pipeline, delivery, automation health, support, reporting, billing, and client risk in one lean workspace.</p>
         </div>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          fontFamily: 'var(--font-sf-pro-text)',
-          fontSize: 'var(--text-caption)',
-          color: 'var(--color-graphite)'
-        }}>
-          <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: '#248a3d' }} />
-          <span>Live workspace</span>
+        <div className="hero-stat">
+          <Bot size={28} />
+          <strong>{automations.filter(item => item.status === 'Active').length}</strong>
+          <span>active managed automations</span>
         </div>
-      </div>
+      </section>
 
-      {/* Grid of Key Indicators */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: '16px'
-      }}>
-        {/* Accounts Stat */}
-        <div className="glassy-card" style={{ display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer' }} onClick={() => setActiveTab('accounts')}>
-          <div style={{ background: 'var(--color-silver-mist)', padding: '12px', borderRadius: 'var(--radius-md)' }}>
-            <Users size={24} style={{ color: 'var(--color-celestial-light)' }} />
-          </div>
-          <div>
-            <div style={{ color: 'var(--color-whisper-blue)', fontSize: 'var(--text-caption)' }}>Active Accounts</div>
-            <div style={{ fontSize: 'var(--text-heading)', fontWeight: 600, fontFamily: 'var(--font-dotdigital)', color: 'var(--color-ghost-white)' }}>
-              {stats.totalAccounts}
+      <section className="metric-grid">
+        {metricCards.map(card => (
+          <button className="metric-card" key={card.label} onClick={() => setActiveTab(card.tab)}>
+            <span style={{ color: card.tone }}>{card.icon}</span>
+            <div>
+              <span>{card.label}</span>
+              <strong>{card.value}</strong>
             </div>
-          </div>
-        </div>
-
-        {/* Contacts Stat */}
-        <div className="glassy-card" style={{ display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer' }} onClick={() => setActiveTab('contacts')}>
-          <div style={{ background: 'var(--color-silver-mist)', padding: '12px', borderRadius: 'var(--radius-md)' }}>
-            <Users size={24} style={{ color: 'var(--color-azure-glow)' }} />
-          </div>
-          <div>
-            <div style={{ color: 'var(--color-whisper-blue)', fontSize: 'var(--text-caption)' }}>Connected Contacts</div>
-            <div style={{ fontSize: 'var(--text-heading)', fontWeight: 600, fontFamily: 'var(--font-dotdigital)', color: 'var(--color-ghost-white)' }}>
-              {stats.totalContacts}
-            </div>
-          </div>
-        </div>
-
-        {/* Projects Stat */}
-        <div className="glassy-card" style={{ display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer' }} onClick={() => setActiveTab('projects')}>
-          <div style={{ background: 'var(--color-silver-mist)', padding: '12px', borderRadius: 'var(--radius-md)' }}>
-            <FolderGit size={24} style={{ color: 'var(--color-neon-violet)' }} />
-          </div>
-          <div>
-            <div style={{ color: 'var(--color-whisper-blue)', fontSize: 'var(--text-caption)' }}>Active Projects</div>
-            <div style={{ fontSize: 'var(--text-heading)', fontWeight: 600, fontFamily: 'var(--font-dotdigital)', color: 'var(--color-ghost-white)' }}>
-              {stats.totalProjects}
-            </div>
-          </div>
-        </div>
-
-        {/* Assets Stat */}
-        <div className="glassy-card" style={{ display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer' }} onClick={() => setActiveTab('assets')}>
-          <div style={{ background: 'var(--color-silver-mist)', padding: '12px', borderRadius: 'var(--radius-md)' }}>
-            <HardDrive size={24} style={{ color: 'var(--color-arctic-mist)' }} />
-          </div>
-          <div>
-            <div style={{ color: 'var(--color-whisper-blue)', fontSize: 'var(--text-caption)' }}>Account Assets</div>
-            <div style={{ fontSize: 'var(--text-heading)', fontWeight: 600, fontFamily: 'var(--font-dotdigital)', color: 'var(--color-ghost-white)' }}>
-              {stats.totalAssets}
-            </div>
-          </div>
-        </div>
-
-        {/* Interactions Stat */}
-        <div className="glassy-card" style={{ display: 'flex', alignItems: 'center', gap: '16px', cursor: 'default' }}>
-          <div style={{ background: 'var(--color-silver-mist)', padding: '12px', borderRadius: 'var(--radius-md)' }}>
-            <ActivityIcon size={24} style={{ color: 'var(--color-celestial-light)' }} />
-          </div>
-          <div>
-            <div style={{ color: 'var(--color-whisper-blue)', fontSize: 'var(--text-caption)' }}>Interactions</div>
-            <div style={{ fontSize: 'var(--text-heading)', fontWeight: 600, fontFamily: 'var(--font-dotdigital)', color: 'var(--color-ghost-white)' }}>
-              {stats.totalActivities}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Dashboard Section */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-        gap: '24px'
-      }}>
-        {/* Status Distribution & Statistics */}
-        <div className="glassy-card" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <BarChart3 size={18} style={{ color: 'var(--color-celestial-light)' }} />
-            <h3 style={{ fontSize: 'var(--text-subheading)' }}>Project Metrics</h3>
-          </div>
-
-          <div style={{ display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
-            {/* Custom SVG Donut Chart */}
-            <div style={{ position: 'relative', width: '130px', height: '130px', flexShrink: 0 }}>
-              <svg width="100%" height="100%" viewBox="0 0 42 42" className="donut">
-                <circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="var(--color-silver-mist)" strokeWidth="4"></circle>
-                {/* Planning */}
-                <circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="var(--color-graphite)" strokeWidth="4" 
-                  strokeDasharray={`${stats.totalProjects ? (stats.planningProjects / stats.totalProjects) * 100 : 0} ${100 - (stats.totalProjects ? (stats.planningProjects / stats.totalProjects) * 100 : 0)}`}
-                  strokeDashoffset="25">
-                </circle>
-                {/* In Progress */}
-                <circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="var(--color-cobalt-link)" strokeWidth="4" 
-                  strokeDasharray={`${stats.totalProjects ? (stats.inProgressProjects / stats.totalProjects) * 100 : 0} ${100 - (stats.totalProjects ? (stats.inProgressProjects / stats.totalProjects) * 100 : 0)}`}
-                  strokeDashoffset={25 - (stats.totalProjects ? (stats.planningProjects / stats.totalProjects) * 100 : 0)}>
-                </circle>
-                {/* Completed */}
-                <circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#248a3d" strokeWidth="4" 
-                  strokeDasharray={`${stats.totalProjects ? (stats.completedProjects / stats.totalProjects) * 100 : 0} ${100 - (stats.totalProjects ? (stats.completedProjects / stats.totalProjects) * 100 : 0)}`}
-                  strokeDashoffset={25 - (stats.totalProjects ? ((stats.planningProjects + stats.inProgressProjects) / stats.totalProjects) * 100 : 0)}>
-                </circle>
-                {/* On Hold */}
-                <circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="var(--color-caution)" strokeWidth="4" 
-                  strokeDasharray={`${stats.totalProjects ? (stats.onHoldProjects / stats.totalProjects) * 100 : 0} ${100 - (stats.totalProjects ? (stats.onHoldProjects / stats.totalProjects) * 100 : 0)}`}
-                  strokeDashoffset={25 - (stats.totalProjects ? ((stats.planningProjects + stats.inProgressProjects + stats.completedProjects) / stats.totalProjects) * 100 : 0)}>
-                </circle>
-              </svg>
-              <div style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: 'var(--text-heading)', fontWeight: 600, fontFamily: 'var(--font-dotdigital)', color: 'var(--color-ghost-white)' }}>
-                  {stats.avgCompletion}%
-                </div>
-                <div style={{ fontSize: '9px', color: 'var(--color-whisper-blue)', textTransform: 'uppercase' }}>Avg Progress</div>
-              </div>
-            </div>
-
-            {/* Legend / Breakdown */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flexGrow: 1 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-caption)' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--color-cobalt-link)' }} />
-                  In Progress
-                </span>
-                <span style={{ fontFamily: 'var(--font-dotdigital)', color: 'var(--color-ghost-white)' }}>{stats.inProgressProjects}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-caption)' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#248a3d' }} />
-                  Completed
-                </span>
-                <span style={{ fontFamily: 'var(--font-dotdigital)', color: 'var(--color-ghost-white)' }}>{stats.completedProjects}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-caption)' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--color-graphite)' }} />
-                  Planning
-                </span>
-                <span style={{ fontFamily: 'var(--font-dotdigital)', color: 'var(--color-ghost-white)' }}>{stats.planningProjects}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-caption)' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--color-caution)' }} />
-                  On Hold
-                </span>
-                <span style={{ fontFamily: 'var(--font-dotdigital)', color: 'var(--color-ghost-white)' }}>{stats.onHoldProjects}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Actionable items / Urgent Project list */}
-        <div className="glassy-card" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Clock size={18} style={{ color: 'var(--color-celestial-light)' }} />
-            <h3 style={{ fontSize: 'var(--text-subheading)' }}>Approaching Deadlines</h3>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {urgentProjects.length > 0 ? (
-              urgentProjects.map(project => {
-                const linkedAccount = accounts.find(a => a.id === project.accountId);
-                return (
-                  <div key={project.id} style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '6px',
-                    paddingBottom: '12px',
-                    borderBottom: '1px solid var(--color-silver-mist)'
-                  }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <span style={{ color: 'var(--color-ghost-white)', fontWeight: 500, fontSize: 'var(--text-body)' }}>
-                        {project.name}
-                      </span>
-                      <span style={{ 
-                        fontSize: '11px', 
-                        color: project.status === 'In Progress' ? 'var(--color-cobalt-link)' : 'var(--color-graphite)' 
-                      }}>
-                        {project.status}
-                      </span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-caption)', color: 'var(--color-whisper-blue)' }}>
-                      <span>Client: {linkedAccount?.name || 'N/A'}</span>
-                      <span>Target: {project.targetDate}</span>
-                    </div>
-                    {/* Completion bar */}
-                    <div style={{ width: '100%', height: '4px', background: 'var(--color-silver-mist)', borderRadius: '2px', overflow: 'hidden', marginTop: '2px' }}>
-                      <div style={{ width: `${project.percentageComplete}%`, height: '100%', background: 'var(--color-neon-violet)', borderRadius: '2px' }} />
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <div style={{ color: 'var(--color-whisper-blue)', fontSize: 'var(--text-body)', textAlign: 'center', padding: '24px 0' }}>
-                All projects completed. Nice work!
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Recent Interactions Feed */}
-        <div className="glassy-card" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <ActivityIcon size={18} style={{ color: 'var(--color-celestial-light)' }} />
-            <h3 style={{ fontSize: 'var(--text-subheading)' }}>Recent Interactions</h3>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {recentActivities.length > 0 ? (
-              recentActivities.map(activity => {
-                const linkedAccount = accounts.find(a => a.id === activity.accountId);
-                const linkedContact = contacts.find(c => c.id === activity.contactId);
-                
-                const getIcon = () => {
-                  switch (activity.type) {
-                    case 'email': return <Mail size={14} style={{ color: 'var(--color-celestial-light)' }} />;
-                    case 'call': return <Phone size={14} style={{ color: 'var(--color-azure-glow)' }} />;
-                    case 'text': return <MessageSquare size={14} style={{ color: 'var(--color-neon-violet)' }} />;
-                    default: return <ActivityIcon size={14} style={{ color: 'var(--color-arctic-mist)' }} />;
-                  }
-                };
-
-                const dateStr = new Date(activity.timestamp).toLocaleDateString([], {
-                  month: 'short',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                });
-
-                return (
-                  <div key={activity.id} style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: '12px',
-                    paddingBottom: '12px',
-                    borderBottom: '1px solid var(--color-silver-mist)'
-                  }}>
-                    <div style={{
-                      background: 'var(--color-silver-mist)',
-                      padding: '8px',
-                      borderRadius: 'var(--radius-md)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      marginTop: '2px',
-                      position: 'relative'
-                    }}>
-                      {getIcon()}
-                      <span style={{
-                        position: 'absolute',
-                        bottom: '-2px',
-                        right: '-2px',
-                        background: 'var(--color-fog)',
-                        borderRadius: '50%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        border: '1px solid var(--color-silver-mist)',
-                        padding: '1px'
-                      }}>
-                        {activity.direction === 'outbound' ? (
-                          <ArrowUpRight size={8} style={{ color: '#248a3d' }} />
-                        ) : (
-                          <ArrowDownLeft size={8} style={{ color: 'var(--color-caution)' }} />
-                        )}
-                      </span>
-                    </div>
-                    
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', flexGrow: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '8px' }}>
-                        <span style={{ 
-                          color: 'var(--color-ghost-white)', 
-                          fontWeight: 500, 
-                          fontSize: 'var(--text-caption)',
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis'
-                        }} title={activity.subject}>
-                          {activity.subject}
-                        </span>
-                        <span style={{ fontSize: '9px', color: 'var(--color-whisper-blue)', flexShrink: 0 }}>
-                          {dateStr}
-                        </span>
-                      </div>
-                      
-                      <div style={{ fontSize: '10px', color: 'var(--color-whisper-blue)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        <span>{linkedAccount?.name || 'N/A'}</span>
-                        {linkedContact && <span> &bull; {linkedContact.firstName} {linkedContact.lastName}</span>}
-                      </div>
-
-                      <div style={{ 
-                        fontSize: 'var(--text-caption)', 
-                        color: 'var(--color-comet)', 
-                        whiteSpace: 'nowrap', 
-                        overflow: 'hidden', 
-                        textOverflow: 'ellipsis' 
-                      }}>
-                        {activity.content}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <div style={{ color: 'var(--color-whisper-blue)', fontSize: 'var(--text-body)', textAlign: 'center', padding: '24px 0' }}>
-                No interactions logged yet.
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Project Overview Portfolio Summary */}
-      <div className="glassy-card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h3 style={{ fontSize: 'var(--text-subheading)' }}>Project Portfolio Snapshot</h3>
-          <button 
-            className="btn-secondary-outline" 
-            onClick={() => setActiveTab('projects')}
-            style={{ padding: '4px 12px', fontSize: 'var(--text-caption)' }}
-          >
-            Manage Projects
           </button>
+        ))}
+      </section>
+
+      <section className="dashboard-grid">
+        <div className="glassy-card">
+          <div className="panel-title">
+            <h3>Account Pipeline</h3>
+            <button className="btn-secondary-outline" onClick={() => setActiveTab('accounts')}>Open Accounts</button>
+          </div>
+          <div className="pipeline-list">
+            {pipeline.map(item => (
+              <div key={item.stage}>
+                <span>{item.stage}</span>
+                <strong>{item.count}</strong>
+                <div><span style={{ width: `${Math.min(100, item.count * 18)}%` }} /></div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="table-container">
-          <table className="crm-table">
-            <thead>
-              <tr>
-                <th>Project Name</th>
-                <th>Client</th>
-                <th>Owner</th>
-                <th>Status</th>
-                <th>Completion</th>
-              </tr>
-            </thead>
-            <tbody>
-              {projects.slice(0, 5).map(project => {
-                const linkedAccount = accounts.find(a => a.id === project.accountId);
-                return (
-                  <tr key={project.id}>
-                    <td style={{ fontWeight: 500, color: 'var(--color-ghost-white)' }}>{project.name}</td>
-                    <td>{linkedAccount?.name || 'N/A'}</td>
-                    <td>{project.owner}</td>
-                    <td>
-                      <span className={`status-badge ${project.status.toLowerCase().replace(' ', '-')}`}>
-                        {project.status}
-                      </span>
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div style={{ width: '80px', height: '6px', background: 'var(--color-silver-mist)', borderRadius: '3px', overflow: 'hidden' }}>
-                          <div style={{ width: `${project.percentageComplete}%`, height: '100%', background: project.status === 'Completed' ? '#248a3d' : 'var(--color-neon-violet)' }} />
-                        </div>
-                        <span style={{ fontFamily: 'var(--font-dotdigital)', fontSize: 'var(--text-caption)' }}>{project.percentageComplete}%</span>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+        <div className="glassy-card">
+          <div className="panel-title">
+            <h3>Tasks Due</h3>
+            <button className="btn-secondary-outline" onClick={() => setActiveTab('tasks')}>Open Tasks</button>
+          </div>
+          <div className="compact-list">
+            {urgentTasks.length ? urgentTasks.map(task => (
+              <div key={task.id}>
+                <strong>{task.name}</strong>
+                <span>{accountName(task.accountId)} / {task.priority} / due {task.dueDate || 'not set'}</span>
+              </div>
+            )) : <p>No open tasks due soon.</p>}
+          </div>
         </div>
-      </div>
+
+        <div className="glassy-card">
+          <div className="panel-title">
+            <h3>Automation Health</h3>
+            <button className="btn-secondary-outline" onClick={() => setActiveTab('automations')}>Open Automations</button>
+          </div>
+          <div className="compact-list">
+            {errorAutomations.length ? errorAutomations.map(automation => (
+              <div key={automation.id}>
+                <strong>{automation.name}</strong>
+                <span>{accountName(automation.accountId)} / {automation.criticality} / {automation.failuresThisMonth || 0} failures this month</span>
+              </div>
+            )) : <p>No automations currently marked Error.</p>}
+          </div>
+        </div>
+
+        <div className="glassy-card">
+          <div className="panel-title">
+            <h3>Billing Snapshot</h3>
+            <button className="btn-secondary-outline" onClick={() => setActiveTab('billing')}>Open Billing</button>
+          </div>
+          <div className="compact-list">
+            {upcomingBilling.length ? upcomingBilling.map(contract => (
+              <div key={contract.id}>
+                <strong>{accountName(contract.accountId)}</strong>
+                <span>{contract.paymentStatus} / next invoice {contract.nextInvoiceDate || 'not set'} / renewal {contract.renewalDate || 'not set'}</span>
+              </div>
+            )) : <p>No billing records need attention.</p>}
+          </div>
+        </div>
+
+        <div className="glassy-card">
+          <div className="panel-title">
+            <h3>Client Health</h3>
+            <button className="btn-secondary-outline" onClick={() => setActiveTab('accounts')}>Open Accounts</button>
+          </div>
+          <div className="compact-list">
+            {attentionAccounts.length ? attentionAccounts.map(account => (
+              <div key={account.id}>
+                <strong>{account.name}</strong>
+                <span>{account.health} / next action: {account.nextAction || 'not set'}</span>
+              </div>
+            )) : <p>No accounts marked Yellow or Red.</p>}
+          </div>
+        </div>
+
+        <div className="glassy-card">
+          <div className="panel-title">
+            <h3>Workspace Scope</h3>
+          </div>
+          <div className="scope-stack">
+            <span>{contacts.length} contacts</span>
+            <span>{assets.length} assets</span>
+            <span>{activities.length} interactions logged</span>
+            <span>{supportTickets.length} support tickets</span>
+            <span>{reports.length} reports</span>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };

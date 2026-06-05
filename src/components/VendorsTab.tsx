@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Vendor } from '../types';
-import { Plus, Search, Filter, Globe, Mail, Phone, BookOpen, Edit3, X, Home, ChevronRight, ArrowLeft } from 'lucide-react';
+import { Plus, Search, Filter, Globe, Mail, Phone, BookOpen, Edit3, Home, ChevronRight, ArrowLeft } from 'lucide-react';
 
 interface VendorsTabProps {
   vendors: Vendor[];

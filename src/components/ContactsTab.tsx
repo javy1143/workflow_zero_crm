@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Contact, Account, Activity } from '../types';
-import { Plus, Search, Filter, Mail, Phone, Briefcase, Building, Edit3, X, Home, ChevronRight, ArrowLeft } from 'lucide-react';
+import { Plus, Search, Filter, Mail, Phone, Briefcase, Building, Edit3, Home, ChevronRight, ArrowLeft } from 'lucide-react';
 import { ActivityLogger } from './ActivityLogger';
 import { ActivityTimeline } from './ActivityTimeline';
 

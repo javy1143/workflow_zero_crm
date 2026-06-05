@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Account, Contact, Project, Asset, Activity } from '../types';
-import { Plus, Search, Filter, Globe, Phone, Mail, MapPin, Edit3, X, FileText, Upload, Trash2, Paperclip, Briefcase, FolderGit, HardDrive, Users, AlertCircle, Home, ChevronRight, ArrowLeft } from 'lucide-react';
+import { Plus, Search, Filter, Globe, MapPin, Edit3, X, FileText, Upload, Trash2, Paperclip, FolderGit, HardDrive, Users, AlertCircle, Home, ChevronRight, ArrowLeft } from 'lucide-react';
 import { ActivityLogger } from './ActivityLogger';
 import { ActivityTimeline } from './ActivityTimeline';
 
@@ -120,7 +120,7 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({
       if (account) {
         setSelectedAccount(account);
         setEditName(account.name);
-        setEditStatus(account.status);
+        setEditStatus(account.status as any);
         setEditIndustry(account.industry);
         setEditWebsite(account.website);
         setEditPhone(account.phone);

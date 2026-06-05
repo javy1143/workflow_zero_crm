@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Asset, Account } from '../types';
-import { Plus, Search, Filter, Eye, EyeOff, Key, Code, Cloud, Network, Shield, Edit3, X, Home, ChevronRight, ArrowLeft } from 'lucide-react';
+import { Plus, Search, Filter, Eye, EyeOff, Key, Code, Cloud, Network, Shield, Edit3, Home, ChevronRight, ArrowLeft } from 'lucide-react';
 
 interface AssetsTabProps {
   assets: Asset[];
@@ -83,10 +83,10 @@ export const AssetsTab: React.FC<AssetsTabProps> = ({
       if (asset) {
         setSelectedAsset(asset);
         setEditName(asset.name);
-        setEditServiceProvider(asset.serviceProvider);
+        setEditServiceProvider(asset.serviceProvider as any);
         setEditDetails(asset.details);
         setEditAccountId(asset.accountId);
-        setEditStatus(asset.status);
+        setEditStatus(asset.status as any);
         setEditNotes(asset.notes);
       } else {
         setSelectedAsset(null);

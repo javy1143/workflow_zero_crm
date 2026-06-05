@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Project, Account, Contact } from '../types';
-import { Plus, Search, Filter, Calendar, User, Building, Compass, Edit3, X, Home, ChevronRight, ArrowLeft } from 'lucide-react';
+import { Plus, Search, Filter, Calendar, User, Building, Compass, Edit3, Home, ChevronRight, ArrowLeft } from 'lucide-react';
 
 interface ProjectsTabProps {
   projects: Project[];
@@ -97,7 +97,7 @@ export const ProjectsTab: React.FC<ProjectsTabProps> = ({
         setSelectedProject(project);
         setEditName(project.name);
         setEditOwner(project.owner);
-        setEditStatus(project.status);
+        setEditStatus(project.status as any);
         setEditAccountId(project.accountId);
         setEditContactId(project.contactId);
         setEditStartDate(project.startDate);
