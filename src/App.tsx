@@ -204,7 +204,7 @@ export default function App() {
       <header className="topbar no-print">
         <button className="brand-lockup" onClick={() => navigate('dashboard')}>
           <img src="/logo.png" alt="Workflow Zero Logo" />
-          <span>Lean CRM</span>
+          <span>Workflow Zero CRM</span>
         </button>
 
         <nav className="desktop-nav compact-nav">
