@@ -6,6 +6,8 @@ import {
   ListChecks,
   LogOut,
   Menu,
+  Moon,
+  Sun,
   User as UserIcon,
   Users,
   X
@@ -17,15 +19,24 @@ import { LeanContactsTab } from './components/LeanContactsTab';
 import { LeanAutomationsTab } from './components/LeanAutomationsTab';
 import { LeanTasksTab } from './components/LeanTasksTab';
 import { LeanReportsTab } from './components/LeanReportsTab';
-import { authService } from './firebase';
+import { authService } from './auth';
 import { dbService } from './services/db';
 import { Account, Automation, Contact, Report, Task } from './types';
+
+type AppTheme = 'dark' | 'light';
+
+const getInitialTheme = (): AppTheme => {
+  const savedTheme = window.localStorage.getItem('workflow-zero-theme');
+  if (savedTheme === 'dark' || savedTheme === 'light') return savedTheme;
+  return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+};
 
 export default function App() {
   const [user, setUser] = useState<any>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [theme, setTheme] = useState<AppTheme>(getInitialTheme);
 
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -40,6 +51,11 @@ export default function App() {
     });
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    window.localStorage.setItem('workflow-zero-theme', theme);
+  }, [theme]);
 
   const navigate = (tab: string) => {
     const path = tab === 'dashboard' ? '/' : `/${tab}`;
@@ -170,6 +186,10 @@ export default function App() {
     navigate('dashboard');
   };
 
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
+
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} /> },
     { id: 'accounts', label: 'Accounts', icon: <Users size={18} /> },
@@ -217,6 +237,13 @@ export default function App() {
         </nav>
 
         <div className="user-actions desktop-only">
+          <button
+            onClick={toggleTheme}
+            className="btn-icon"
+            title={theme === 'dark' ? 'Switch to light view' : 'Switch to dark view'}
+          >
+            {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+          </button>
           <div className="user-pill">
             <UserIcon size={14} />
             <span>{user.displayName || user.email}</span>
@@ -239,6 +266,10 @@ export default function App() {
               <span>{item.label}</span>
             </button>
           ))}
+          <button onClick={toggleTheme}>
+            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+            <span>{theme === 'dark' ? 'Light View' : 'Dark View'}</span>
+          </button>
           <button onClick={handleSignOut}>
             <LogOut size={16} />
             <span>Sign Out</span>
