@@ -298,7 +298,7 @@ a:hover {
   box-shadow: var(--wfz-shadow-soft);
   display: grid;
   gap: 18px;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: minmax(240px, auto) minmax(0, 1fr) auto;
   left: 22px;
   padding: 10px 12px 10px 16px;
   position: sticky;
@@ -317,6 +317,7 @@ a:hover {
   gap: 10px;
   font-weight: 800;
   min-height: 44px;
+  white-space: nowrap;
 }
 
 .brand-lockup img {
@@ -329,6 +330,7 @@ a:hover {
   display: flex;
   gap: 4px;
   justify-content: center;
+  min-width: 0;
   overflow-x: auto;
 }
 
@@ -372,6 +374,7 @@ a:hover {
 .user-actions {
   align-items: center;
   display: flex;
+  flex-shrink: 0;
   gap: 10px;
 }
 
@@ -521,6 +524,10 @@ a:hover {
   justify-content: center;
   transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
   width: 40px;
+}
+
+.btn-icon.mobile-only {
+  display: none;
 }
 
 .btn-icon:hover {
@@ -1333,6 +1340,10 @@ textarea:focus-visible {
   }
 
   .mobile-only {
+    display: flex !important;
+  }
+
+  .btn-icon.mobile-only {
     display: flex !important;
   }
 
