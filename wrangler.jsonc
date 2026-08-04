@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "workflow-zero-crm",
+  "compatibility_date": "2026-05-28",
+  "pages_build_output_dir": "./dist",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "workflow-zero-crm",
+      "database_id": "f56a549b-9085-45de-8e8f-debd2aad3f2b"
+    }
+  ]
+}
